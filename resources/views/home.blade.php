@@ -731,9 +731,7 @@ $images = glob(public_path('images/gallery/rdsa2/*'));
 
     </section>
 
-    {{-- =========================================================
-     PARTICIPER
-========================================================= --}}
+    {{-- PARTICIPER --}}
 
     <section id="participer" class="rdsa-participation">
 
@@ -2170,7 +2168,7 @@ $images = glob(public_path('images/gallery/rdsa2/*'));
                 </p>
 
                 <p>
-                    Fait avec foi & passion.
+                    Dévéloppé par Jada Firmament.
                 </p>
 
             </div>
