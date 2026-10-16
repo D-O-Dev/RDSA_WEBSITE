@@ -17,68 +17,7 @@ import './bootstrap';
    la configuration administrateur.
 ========================================================= */
 
-const participationConfig = {
-
-    edition: {
-        id: null,
-        name: 'RDSA 3',
-        date: 'Samedi 08 août 2026'
-    },
-
-    previousEditions: [
-        {
-            id: 1,
-            name: 'RDSA 1',
-            date: '28 mars 2026'
-        },
-        {
-            id: 2,
-            name: 'RDSA 2',
-            date: '08 août 2026'
-        }
-    ],
-
-    pricing: {
-        basePrice: 1000,
-        allowAdditionalContribution: true
-    },
-
-    waveNumbers: [
-        {
-            id: 1,
-            label: 'WAVE 01',
-            number: '+225 07 XX XX XX XX',
-            active: true
-        },
-
-        {
-            id: 2,
-            label: 'WAVE 02',
-            number: '+225 01 XX XX XX XX',
-            active: true
-        },
-
-        {
-            id: 3,
-            label: 'WAVE 03',
-            number: '+225 05 XX XX XX XX',
-            active: true
-        }
-    ],
-
-    payment: {
-        maxProofSize: 5 * 1024 * 1024,
-
-        allowedProofTypes: [
-            'image/jpeg',
-            'image/png',
-            'image/webp'
-        ]
-    }
-
-
-
-};
+const participationConfig = window.RDSAParticipationConfig;
 
 
 /* =========================================================
@@ -757,7 +696,7 @@ function initializeQuantityControls() {
                 Number(input.value || 1);
 
 
-            quantity += 1;
+            quantity = Math.min(20, quantity + 1);
 
 
             input.value =
@@ -1947,30 +1886,170 @@ function showParticipationStep(
    CONFIRMATION
 ========================================================= */
 
-function confirmParticipation() {
+async function confirmParticipation() {
 
-    /*
-     * POUR LE FRONTEND UNIQUEMENT
-     *
-     * Plus tard cette fonction fera :
-     *
-     * POST /participations
-     *
-     * avec FormData.
-     *
-     * Le backend Laravel générera alors
-     * la vraie référence.
-     */
-
-
-    generateTemporaryTicket();
-
-
-    showParticipationStep(
-        5
+    const button = document.querySelector(
+        '#participation-step-4 .participation-next'
     );
 
+    if (!validateStep1() || !validateStep2() || !validateStep3()) {
+        return;
+    }
+
+    if (!participationConfig.edition.id) {
+        showParticipationError(
+            'Aucune édition active ne peut recevoir de participation.'
+        );
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append(
+        'edition_id',
+        participationConfig.edition.id
+    );
+
+    formData.append(
+        'submission_token',
+        window.RDSASubmissionToken
+    );
+
+    formData.append('full_name', participationData.name);
+    formData.append('phone', participationData.phone);
+    formData.append('quantity', participationData.quantity);
+
+    formData.append(
+        'extra_contribution',
+        Math.max(
+            0,
+            participationData.amount - participationData.baseAmount
+        )
+    );
+
+    formData.append('wave_number_id', participationData.waveId);
+
+    formData.append(
+        'transaction_reference',
+        participationData.transactionReference
+    );
+
+    formData.append(
+        'payment_amount',
+        participationData.paymentAmount
+    );
+
+    formData.append(
+        'payment_proof',
+        participationData.paymentProof
+    );
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'ENVOI EN COURS…';
+    }
+
+    try {
+        const response = await fetch(
+            '/participations',
+            {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': window.RDSACsrfToken,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            }
+        );
+
+        /*
+         * Laravel renvoie une page HTML après la redirection
+         * vers la confirmation.
+         */
+        if (response.redirected && response.ok) {
+            window.location.href = response.url;
+            return;
+        }
+
+        if (response.status === 422) {
+            const result = await response.json();
+
+            displayParticipationErrors(result.errors || {});
+
+            return;
+        }
+
+        showParticipationError(
+            'Une erreur est survenue. Réessaie dans quelques instants.'
+        );
+
+    } catch (error) {
+        showParticipationError(
+            'Connexion impossible. Vérifie ta connexion et réessaie.'
+        );
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.innerHTML =
+                'CONFIRMER <i class="bi bi-check2"></i>';
+        }
+    }
 }
+
+
+function showParticipationError(message) {
+
+    let container = document.getElementById(
+        'participation-server-error'
+    );
+
+    if (!container) {
+        container = document.createElement('div');
+
+        container.id = 'participation-server-error';
+        container.className = 'alert alert-danger';
+
+        document.querySelector('.participation-card')
+            ?.prepend(container);
+    }
+
+    container.textContent = message;
+    container.hidden = false;
+}
+
+
+function displayParticipationErrors(errors) {
+
+    const fieldMap = {
+        full_name: 'participant_name',
+        phone: 'participant_phone',
+        quantity: 'participant_quantity',
+        extra_contribution: 'participant_amount',
+        transaction_reference: 'transaction_reference',
+        payment_amount: 'payment_amount',
+        payment_proof: 'payment_proof'
+    };
+
+    let firstInvalid = null;
+
+    Object.entries(errors).forEach(([field, messages]) => {
+
+        const input = document.getElementById(fieldMap[field]);
+
+        if (input) {
+            markInvalid(input, messages[0]);
+
+            if (!firstInvalid) {
+                firstInvalid = input;
+            }
+        } else {
+            showParticipationError(messages[0]);
+        }
+    });
+
+    firstInvalid?.focus();
+}
+
 
 
 /* =========================================================

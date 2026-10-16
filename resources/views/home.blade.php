@@ -731,6 +731,12 @@ $images = glob(public_path('images/gallery/rdsa2/*'));
 
     </section>
 
+    <script>
+        window.RDSAParticipationConfig = @json($participationConfig);
+        window.RDSASubmissionToken = @json($submissionToken);
+        window.RDSACsrfToken = @json(csrf_token());
+    </script>
+
     {{-- PARTICIPER --}}
 
     <section id="participer" class="rdsa-participation">
