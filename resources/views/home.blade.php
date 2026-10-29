@@ -88,6 +88,17 @@ $images = glob(public_path('images/gallery/rdsa2/*'));
     {{-- HERO --}}
     <section id="accueil" class="rdsa-hero">
 
+        {{-- IMAGE D'ARRIÈRE-PLAN AVEC EFFET PARALLAXE --}}
+        <div class="rdsa-hero-background">
+            <img
+                src="{{ asset('images/gallery/rdsa2/rdsa2-img-h46.png') }}"
+                alt=""
+                aria-hidden="true">
+        </div>
+
+        {{-- Voile sombre pour préserver la lisibilité --}}
+        <div class="rdsa-hero-overlay"></div>
+
         {{-- Atmosphère --}}
         <div class="hero-glow hero-glow-one"></div>
         <div class="hero-glow hero-glow-two"></div>
@@ -181,7 +192,7 @@ $images = glob(public_path('images/gallery/rdsa2/*'));
                         <div class="hero-photo hero-photo-wide">
 
                             <img
-                                src="{{ asset('images/gallery/rdsa2/rdsa2-img-h42.jpeg') }}"
+                                src="{{ asset('images/gallery/rdsa3/rdsa3-img-h1.jpeg') }}"
                                 alt="Ambiance de la RDSA">
 
                         </div>
@@ -955,7 +966,7 @@ $images = glob(public_path('images/gallery/rdsa2/*'));
                                 <div class="col-md-7 participation-field">
 
                                     <label for="participant_phone">
-                                        Téléphone / WhatsApp
+                                        Numero WhatsApp
                                     </label>
 
                                     <input
@@ -971,44 +982,11 @@ $images = glob(public_path('images/gallery/rdsa2/*'));
                                 </div>
 
 
-                                {{-- NOMBRE --}}
-
                                 <div class="col-md-5 participation-field">
-
-                                    <label for="participant_quantity">
-                                        Nombre de personnes
-                                    </label>
-
-                                    <div class="quantity-control">
-
-                                        <button
-                                            type="button"
-                                            class="quantity-btn"
-                                            id="quantity_minus"
-                                            aria-label="Diminuer">
-                                            <i class="bi bi-dash"></i>
-                                        </button>
-
-                                        <input
-                                            type="number"
-                                            id="participant_quantity"
-                                            name="participant_quantity"
-                                            value="1"
-                                            min="1"
-                                            readonly>
-
-                                        <button
-                                            type="button"
-                                            class="quantity-btn"
-                                            id="quantity_plus"
-                                            aria-label="Augmenter">
-                                            <i class="bi bi-plus"></i>
-                                        </button>
-
-                                    </div>
-
-                                    <small class="field-error"></small>
-
+                                    <label for="participant_quantity">Billet individuel</label>
+                                    <input type="text" id="participant_quantity"
+                                        class="form-control rdsa-input" value="1 personne · 1 billet" readonly>
+                                    <small>Chaque personne doit remplir sa propre inscription.</small>
                                 </div>
 
                                 {{-- HISTORIQUE DE PARTICIPATION --}}

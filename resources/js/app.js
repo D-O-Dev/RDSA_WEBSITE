@@ -97,7 +97,7 @@ function initializeParticipation() {
     /*
      * Quantité
      */
-    initializeQuantityControls();
+
 
 
     /*
@@ -453,21 +453,13 @@ function formatAmount(amount) {
 
 function calculateBaseAmount() {
 
-    const quantity =
-        Number(
-            document.getElementById(
-                'participant_quantity'
-            )?.value || 1
-        );
-
-
     const basePrice =
         Number(
             participationConfig.pricing.basePrice
         );
 
 
-    return quantity * basePrice;
+    return basePrice;
 
 }
 
@@ -478,23 +470,7 @@ function calculateBaseAmount() {
 
 function updateParticipationAmount() {
 
-    const quantityInput =
-        document.getElementById(
-            'participant_quantity'
-        );
-
-
-    if (!quantityInput) {
-        return;
-    }
-
-
-    const quantity =
-        Math.max(
-            1,
-            Number(quantityInput.value || 1)
-        );
-
+    const quantity = 1;
 
     const baseAmount =
         calculateBaseAmount();
@@ -637,79 +613,6 @@ function updateParticipationAmount() {
 /* =========================================================
    QUANTITÉ
 ========================================================= */
-
-function initializeQuantityControls() {
-
-    const input =
-        document.getElementById(
-            'participant_quantity'
-        );
-
-
-    const minus =
-        document.getElementById(
-            'quantity_minus'
-        );
-
-
-    const plus =
-        document.getElementById(
-            'quantity_plus'
-        );
-
-
-    if (!input) {
-        return;
-    }
-
-
-    minus?.addEventListener(
-        'click',
-        function () {
-
-            let quantity =
-                Number(input.value || 1);
-
-
-            quantity =
-                Math.max(
-                    1,
-                    quantity - 1
-                );
-
-
-            input.value =
-                quantity;
-
-
-            updateParticipationAmount();
-
-        }
-    );
-
-
-    plus?.addEventListener(
-        'click',
-        function () {
-
-            let quantity =
-                Number(input.value || 1);
-
-
-            quantity = Math.min(20, quantity + 1);
-
-
-            input.value =
-                quantity;
-
-
-            updateParticipationAmount();
-
-        }
-    );
-
-}
-
 
 /* =========================================================
    MONTANT PERSONNALISÉ
@@ -1203,10 +1106,7 @@ function validateStep1() {
         phoneInput.value.trim();
 
 
-    const quantity =
-        Number(
-            quantityInput.value
-        );
+    const quantity = 1;
 
 
     const amount =
@@ -1256,21 +1156,6 @@ function validateStep1() {
         markInvalid(
             phoneInput,
             'Ton numéro de téléphone est obligatoire.'
-        );
-
-        valid = false;
-
-    }
-
-
-    if (
-        !quantity ||
-        quantity < 1
-    ) {
-
-        markInvalid(
-            quantityInput,
-            'Le nombre minimum est de 1 personne.'
         );
 
         valid = false;
@@ -1917,7 +1802,7 @@ async function confirmParticipation() {
 
     formData.append('full_name', participationData.name);
     formData.append('phone', participationData.phone);
-    formData.append('quantity', participationData.quantity);
+    formData.append('quantity', 1);
 
     formData.append(
         'extra_contribution',
@@ -2338,4 +2223,58 @@ document.addEventListener('keydown', function (event) {
         closeGallery.click();
     }
 
+});
+
+/* =========================================================
+   PARALLAX — HERO RDSA
+   ========================================================= */
+
+document.addEventListener('DOMContentLoaded', () => {
+    const hero = document.querySelector('.rdsa-hero');
+    const background = document.querySelector(
+        '.rdsa-hero-background img'
+    );
+
+    if (!hero || !background) return;
+
+    // Respecter les préférences d'accessibilité.
+    const reducedMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+    );
+
+    if (reducedMotion.matches) return;
+
+    let ticking = false;
+
+    function updateParallax() {
+        const rect = hero.getBoundingClientRect();
+
+        // Ne calculer que lorsque le hero est visible.
+        if (rect.bottom > 0 && rect.top < window.innerHeight) {
+            const speed = 0.20;
+            const offset = -rect.top * speed;
+
+            background.style.transform =
+                `translate3d(0, ${offset}px, 0) scale(1.15)`;
+        }
+
+        ticking = false;
+    }
+
+    function requestParallaxUpdate() {
+        if (ticking) return;
+
+        ticking = true;
+        requestAnimationFrame(updateParallax);
+    }
+
+    window.addEventListener(
+        'scroll',
+        requestParallaxUpdate,
+        { passive: true }
+    );
+
+    window.addEventListener('resize', requestParallaxUpdate);
+
+    updateParallax();
 });

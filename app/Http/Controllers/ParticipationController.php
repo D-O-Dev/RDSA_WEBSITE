@@ -25,7 +25,7 @@ class ParticipationController extends Controller
             'submission_token' => ['required', 'uuid'],
             'full_name' => ['required', 'string', 'min:2', 'max:150'],
             'phone' => ['required', 'string', 'min:8', 'max:30'],
-            'quantity' => ['required', 'integer', 'min:1', 'max:20'],
+            'quantity' => ['required', 'integer', 'in:1'],
             'extra_contribution' => [
                 'required',
                 'integer',
