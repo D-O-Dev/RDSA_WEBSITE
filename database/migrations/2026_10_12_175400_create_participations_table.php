@@ -22,8 +22,7 @@ return new class extends Migration
             // Référence publique de la participation
             $table->string('reference', 40)->unique();
 
-            // Quantité et tarification
-            $table->unsignedSmallInteger('quantity');
+            // Tarification
             $table->unsignedInteger('unit_price');
             $table->unsignedBigInteger('base_amount');
             $table->unsignedBigInteger('extra_contribution')->default(0);

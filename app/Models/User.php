@@ -10,6 +10,8 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+    protected $attributes = ['is_active' => true];
+
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
@@ -39,6 +41,8 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
+        'is_active' => 'boolean',
+        'is_admin' => 'boolean',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];

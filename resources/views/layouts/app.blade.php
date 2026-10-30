@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     
@@ -12,7 +12,7 @@
     
     <title>@yield('title', 'RDSA')</title>
     
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/components.css', 'resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 

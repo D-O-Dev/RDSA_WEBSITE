@@ -28,6 +28,13 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        RateLimiter::for('reservations', fn (Request $request) => [
+            Limit::perMinute(3)->by('reservation-minute:' . $request->ip()),
+            Limit::perHour(5)->by('reservation-hour:' . $request->ip()),
+            Limit::perDay(20)->by('reservation-day:' . $request->ip()),
+            Limit::perHour(5)->by('reservation-session:' . $request->session()->getId()),
+        ]);
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

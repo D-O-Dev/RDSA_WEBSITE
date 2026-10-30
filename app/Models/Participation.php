@@ -11,6 +11,10 @@ class Participation extends Model
 {
     use HasFactory;
 
+    // Compatibility with historical rows: the retired financial columns are never exposed or charged.
+    protected $attributes = ['unit_price' => 0, 'base_amount' => 0, 'extra_contribution' => 0, 'total_expected' => 0];
+    protected $hidden = ['unit_price', 'base_amount', 'extra_contribution', 'total_expected', 'reservation_phone_hash'];
+
     public const STATUS_PENDING = 'pending';
     public const STATUS_CONFIRMED = 'confirmed';
     public const STATUS_REJECTED = 'rejected';
@@ -21,20 +25,12 @@ class Participation extends Model
         'edition_id',
         'reference',
         'submission_token',
-        'quantity',
-        'unit_price',
-        'base_amount',
-        'extra_contribution',
-        'total_expected',
         'status',
+        'whatsapp_opt_in', 'reservation_phone_hash', 'has_attended_before', 'previous_edition_ids', 'reviewed_by', 'reviewed_at', 'review_reason',
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
-        'unit_price' => 'integer',
-        'base_amount' => 'integer',
-        'extra_contribution' => 'integer',
-        'total_expected' => 'integer',
+        'whatsapp_opt_in' => 'boolean', 'has_attended_before' => 'boolean', 'previous_edition_ids' => 'array', 'reviewed_at' => 'datetime',
     ];
 
     public function participant(): BelongsTo
@@ -45,11 +41,6 @@ class Participation extends Model
     public function edition(): BelongsTo
     {
         return $this->belongsTo(Edition::class);
-    }
-
-    public function payments(): HasMany
-    {
-        return $this->hasMany(Payment::class);
     }
 
     public function tickets(): HasMany

@@ -13,7 +13,7 @@ class IndividualParticipationTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function data(int $quantity): array
+    private function data(): array
     {
         $edition = Edition::create([
             'name' => 'RDSA test', 'slug' => 'rdsa-test', 'number' => 1,
@@ -24,29 +24,26 @@ class IndividualParticipationTest extends TestCase
         return [
             'edition_id' => $edition->id, 'submission_token' => (string) Str::uuid(),
             'full_name' => 'Participant test', 'phone' => '+2250700000000',
-            'quantity' => $quantity, 'extra_contribution' => 500,
+            'extra_contribution' => 500,
         ];
     }
 
-    public function test_group_registration_is_rejected_without_creating_a_participant(): void
+    public function test_individual_reservation_waits_for_review_without_issuing_a_ticket(): void
     {
-        try {
-            app(ParticipationService::class)->create($this->data(2));
-            $this->fail('Une inscription groupée doit être refusée.');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey('quantity', $exception->errors());
-        }
-        $this->assertDatabaseCount('participants', 0);
-        $this->assertDatabaseCount('participations', 0);
-    }
-
-    public function test_individual_registration_preserves_price_and_optional_contribution(): void
-    {
-        $participation = app(ParticipationService::class)->create($this->data(1));
-        $this->assertSame(1, $participation->quantity);
-        $this->assertSame(1000, $participation->base_amount);
-        $this->assertSame(1500, $participation->total_expected);
+        $participation = app(ParticipationService::class)->create($this->data());
+        $this->assertArrayNotHasKey('quantity', $participation->getAttributes());
+        $this->assertEquals(0, $participation->base_amount);
+        $this->assertEquals(0, $participation->total_expected);
         $this->assertSame('pending', $participation->status);
+        $this->assertFalse($participation->whatsapp_opt_in);
         $this->assertDatabaseCount('tickets', 0);
+        $this->assertDatabaseCount('payments', 0);
+    }
+    public function test_whatsapp_reception_choice_is_saved(): void
+    {
+        $data = $this->data();
+        $data['whatsapp_opt_in'] = true;
+        $participation = app(ParticipationService::class)->create($data);
+        $this->assertTrue($participation->whatsapp_opt_in);
     }
 }

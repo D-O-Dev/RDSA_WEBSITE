@@ -1,0 +1,16 @@
+/* New controls follow the initial site's 350 ms ease transitions. */
+.primary-action,.ticket-launch,.moments-tabs button,.moments-album select,.rdsa-album-box,.rdsa-album-cta,.rdsa-album-cta i,.rdsa-album-thumb,.questions-float,.questions-submit,.questions-dialog button,.moments-dialog button,.lookup-dialog-head button{transition:all .35s ease}
+button:focus-visible,a:focus-visible{outline:2px solid #d6ad54;outline-offset:3px}
+dialog{overscroll-behavior:contain}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Motion changes presentation only: text, dimensions and original colors stay intact. */
+.action-pending{cursor:wait!important;opacity:.7}
+.action-pending::after{content:'';display:inline-block;vertical-align:middle;flex-shrink:0;width:12px;height:12px;margin-left:8px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:rdsa-wait .7s linear infinite}
+@keyframes rdsa-wait{to{rotate:360deg}}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+    .edition-card,.contact-info-card,.rdsa-album-box{transition:transform .35s ease,box-shadow .35s ease}
+    .edition-card:hover,.contact-info-card:hover,.rdsa-album-box:hover{transform:translateY(-3px)}
+}
+.button{transition:transform .25s ease,box-shadow .25s ease,opacity .25s ease}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.button:hover{transform:translateY(-2px)}}

@@ -1,0 +1,12 @@
+/* Functional additions, loaded before the untouched original design stylesheet. */
+@import './brand.css';
+@import './media-messages.css';
+@import './restored-components.css';
+@import './component-motion.css';
+
+/* Preserve link colors and motion without text underlines. */
+a[href],a[href]:hover,a[href]:focus,a[href]:active{text-decoration:none}
+
+/* The hero keeps its background photo; the two overlaid photos are removed. */
+.rdsa-hero .rdsa-hero-countdown-only{display:flex;align-items:center;justify-content:center;min-height:240px;margin-top:0}.rdsa-hero-countdown-only .rdsa-countdown{position:relative;right:auto;bottom:auto;width:min(100%,420px);margin:0}
+@media(max-width:991px){.rdsa-hero .rdsa-hero-countdown-only{min-height:0;margin-top:32px}.rdsa-hero-countdown-only .rdsa-countdown{width:min(100%,420px)}}

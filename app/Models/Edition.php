@@ -10,6 +10,9 @@ class Edition extends Model
 {
     use HasFactory;
 
+    protected $attributes = ['base_price' => 0];
+    protected $hidden = ['base_price', 'hero_landscape_path', 'hero_portrait_path'];
+
     protected $fillable = [
         'name',
         'slug',
@@ -19,15 +22,19 @@ class Edition extends Model
         'starts_at',
         'venue',
         'venue_details',
-        'base_price',
+        'map_url', 'latitude', 'longitude', 'contact_phone', 'contact_whatsapp',
         'is_active',
+        'is_published',
+        'is_archived',
+        'hero_background_path',
     ];
 
     protected $casts = [
         'number' => 'integer',
         'starts_at' => 'datetime',
-        'base_price' => 'integer',
         'is_active' => 'boolean',
+        'is_published' => 'boolean',
+        'is_archived' => 'boolean',
     ];
 
     public function participations(): HasMany

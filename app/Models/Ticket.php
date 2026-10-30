@@ -28,16 +28,26 @@ class Ticket extends Model
     protected $casts = [
         'ticket_number' => 'integer',
         'issued_at' => 'datetime',
+        'access_token' => 'encrypted',
+        'qr_token' => 'encrypted',
     ];
 
     // Ne jamais exposer qr_token_hash dans une réponse publique.
     protected $hidden = [
         'qr_token_hash',
+        'qr_token',
+        'access_token',
+        'access_token_hash',
     ];
 
     public function participation(): BelongsTo
     {
         return $this->belongsTo(Participation::class);
+    }
+
+    public function whatsappDelivery(): HasOne
+    {
+        return $this->hasOne(WhatsappDelivery::class);
     }
 
     public function attendance(): HasOne

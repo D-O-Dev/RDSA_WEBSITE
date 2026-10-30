@@ -1,0 +1,1 @@
+<dialog id="ticket-dialog" class="ticket-lookup-dialog" aria-labelledby="ticket-dialog-title"><div class="lookup-dialog-head"><span class="section-kicker">MON BILLET</span><button type="button" data-dialog-close aria-label="Fermer" autofocus><i class="bi bi-x-lg"></i></button></div>@include('tickets.lookup-form')</dialog>

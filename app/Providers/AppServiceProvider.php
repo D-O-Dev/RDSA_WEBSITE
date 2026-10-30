@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\View::composer('admin.layout', function ($view) {
+            $view->with('unreadMessageCount', auth()->user()?->is_admin ? \App\Models\ContactMessage::where('status', 'new')->count() : 0);
+        });
         //
     }
 }
