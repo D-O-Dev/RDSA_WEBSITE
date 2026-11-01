@@ -63,6 +63,7 @@ class CalendarController extends Controller
         $event->fill($data);
         if (!$event->exists) $event->created_by = $request->user()->id;
         $event->save();
+        $request->attributes->set('admin_action_target', 'Rendez-vous #' . $event->id);
         return redirect()->route('admin.calendar.index', ['month' => $event->starts_at->format('Y-m')])->with('status', 'Rendez-vous enregistré.');
     }
 

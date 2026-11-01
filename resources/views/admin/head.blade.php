@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <style>
     :root {
-      --bgimg: url('/images/gallery/rdsa2/rdsa2-img-h42.jpeg')
+      --bgimg: url({!! json_encode(asset(\App\Models\SiteContent::current()['admin_background_path']), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!})
     }
   </style>
   <title>RDSA · Administration</title>
@@ -1659,51 +1659,6 @@
       background: var(--panel2)
     }
 
-    .col .side {
-      width: 84px
-    }
-
-    .col .main {
-      margin-left: 124px
-    }
-
-    .col .brand>div:last-child,
-    .col .me>div:last-child,
-    .col .nav h4 {
-      display: none
-    }
-
-    .col .brand {
-      justify-content: center;
-      padding-inline: 0
-    }
-
-    .col .nav a {
-      font-size: 0;
-      position: relative;
-      justify-content: center;
-      padding: 4px;
-      border-radius: 50%
-    }
-
-    .col .nav a i {
-      font-size: 16px
-    }
-
-    .col .cnt {
-      position: absolute;
-      top: -2px;
-      right: -2px;
-      font-size: 10px;
-      padding: 0 5px;
-      min-width: 16px
-    }
-
-    .col .me {
-      justify-content: center;
-      margin-inline: 10px
-    }
-
     .cmp .card {
       padding: 15px
     }
@@ -1737,18 +1692,12 @@
         bottom: 12px
       }
 
-      .col .main {
-        margin-left: 0
-      }
 
       .notif {
         top: 76px;
         right: 12px
       }
 
-      .col .side {
-        width: 240px
-      }
     }
 
     @media print {

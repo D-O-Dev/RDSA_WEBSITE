@@ -1,5 +1,11 @@
+@import './admin-guide.css';
+@import './admin-account.css';
+@import './admin-appearance.css';
+@import './admin-statistics.css';
 @import './component-motion.css';
 @import './admin-calendar.css';
+@import './admin-sidebar.css';
+@import './admin-updates.css';
 /* Additions for real admin data; original design remains in admin/head. */
 @view-transition{navigation:none}
 .library-card>img{object-fit:contain}
@@ -17,7 +23,7 @@ a[href],a[href]:hover,a[href]:focus,a[href]:active{text-decoration:none}
 
 /* Interactions restored from the admin mockup. */
 .side{transition:width .3s ease,transform .3s ease}.main{transition:margin-left .3s ease}.nav a,.nav a i{transition:background .2s ease,color .2s ease,transform .2s ease}
-.nav a:hover i{transform:translateX(2px)}
+
 .admin-commands{width:min(580px,calc(100% - 28px));max-height:80dvh;margin:12vh auto auto;padding:20px;background:var(--side);color:var(--tx);border:1px solid var(--edge);border-radius:26px;box-shadow:var(--sh);backdrop-filter:blur(22px)}
 .admin-commands::backdrop{background:rgba(4,8,20,.55);backdrop-filter:blur(6px)}
 .command-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.command-heading h2{font-size:19px;margin:0}.command-label{display:block;font-size:12px;color:var(--tx2);margin-bottom:8px}.admin-commands>.in{width:100%}.admin-commands .cmdl{max-height:45dvh;padding:8px 0}.admin-commands .cmdl button{color:var(--tx);font:inherit;transition:background .2s ease,transform .2s ease}.admin-commands .cmdl button.on,.admin-commands .cmdl button:hover{background:var(--panel2)}.admin-commands .cmdl button:active{transform:scale(.985)}.command-help{margin-top:10px;font-size:11px}.command-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
@@ -41,3 +47,10 @@ a[href],a[href]:hover,a[href]:focus,a[href]:active{text-decoration:none}
 .team-role-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:22px}.team-role-guide .card>i{display:inline-grid;place-items:center;width:44px;height:44px;border:1px solid var(--edge);border-radius:14px;color:var(--gold);margin-bottom:14px}.team-role-guide h3{font-size:16px;margin:0 0 8px}.team-role-guide p{color:var(--tx2);font-size:13px;line-height:1.8;margin:0}@media(max-width:600px){.team-role-guide{grid-template-columns:1fr;gap:12px}}
 /* Link buttons use the same text color as real buttons, including visited links. */
 a.btn{color:var(--tx)}
+.admin-leave-confirm h2{font-size:20px;margin:0 0 14px}.admin-leave-confirm p{font-size:14px;line-height:1.8;color:var(--tx2)}.admin-leave-confirm .act{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:24px}.admin-leave-confirm .btn{font:inherit;color:var(--tx);padding:10px 16px}#admin-modal-root:empty{display:none}
+
+.image-source-editor>.in{width:100%}.image-source-editor>.hint{line-height:1.8;margin:10px 0}.image-source-editor .content-current-logo{margin-top:14px}.image-source-editor [hidden]{display:none!important}.image-source-editor button.content-image-option{font:inherit;color:var(--tx)}
+.notification-bell{position:relative}.notification-bell>span{position:absolute;right:-4px;top:-5px;border-radius:20px;min-width:19px;padding:2px 4px;background:var(--gold);color:#102040;font:600 11px/1.4 sans-serif}.notification-item{display:block;padding:14px;margin-block:8px;background:var(--panel2);border:1px solid var(--edge);border-radius:14px;color:var(--tx);font-size:13px;line-height:1.7}.has-new-alert{animation:rdsa-bell 1s ease 3}@keyframes rdsa-bell{25%{rotate:-10deg}75%{rotate:10deg}}
+.in[type=file]::file-selector-button{border:1px solid var(--edge);border-radius:99px;background:var(--panel2);color:var(--tx);font:inherit;padding:8px 12px;margin-right:10px;cursor:pointer}.in[type=file]::-webkit-file-upload-button{border:1px solid var(--edge);border-radius:99px;background:var(--panel2);color:var(--tx);font:inherit;padding:8px 12px;margin-right:10px;cursor:pointer}
+.design-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}.design-option{position:relative;display:flex;flex-direction:column;gap:8px;border:1px solid var(--edge);border-radius:18px;padding:12px;background:var(--panel2);cursor:pointer;min-width:0;transition:border-color .25s,transform .25s}.design-option:has(:checked){border:2px solid var(--gold);padding:11px}.design-option:has(:focus-visible){outline:2px solid var(--gold);outline-offset:4px}.design-option>input{position:absolute;right:18px;top:18px;accent-color:var(--gold);z-index:1}.design-option>strong{font-size:14px}.design-option>span:last-child{font-size:12px;line-height:1.7;color:var(--tx2)}.design-color-fields[hidden]{display:none}@media(max-width:500px){.design-options{grid-template-columns:1fr}}
+.notification-bell>span{background:#d92c3d;color:#fff}.notification-item.is-unread::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#ee4955;box-shadow:0 0 0 3px #ee49551c;margin-right:10px}.notification-item.is-unread{border-left:3px solid #ee4955}

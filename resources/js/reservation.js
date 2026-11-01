@@ -57,7 +57,7 @@ if (pending) {
     const refresh = async () => {
         if (loading || done || document.hidden) return; loading = true;
         try {
-            const response = await fetch(pending.dataset.url, { headers: { Accept: 'application/json' }, credentials: 'same-origin', redirect: 'error' });
+            const response = await fetch(pending.dataset.url, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin', redirect: 'error' });
             if (!response.ok) return;
             const data = await response.json();
             if (data.url) { done = true; window.location.assign(data.url); }
@@ -65,5 +65,5 @@ if (pending) {
         } catch { /* Keep the request reference available when offline. */ }
         finally { loading = false; }
     };
-    setInterval(refresh, 15000); document.addEventListener('visibilitychange', refresh);
+    refresh(); setInterval(refresh, 10000); document.addEventListener('visibilitychange', refresh);
 }

@@ -83,16 +83,20 @@
 <main>
 
     {{-- HERO --}}
-    <section id="accueil" class="rdsa-hero">
+    @php($heroDesign = \App\Support\SiteDesign::resolve($edition))
+    @php($heroSettings = $edition?->hero_settings ?? [])
+    @php($heroSlides = collect([$edition?->hero_background_path ?: 'images/gallery/rdsa2/rdsa2-img-h46.png'])->merge($heroSettings['slides'] ?? [])->filter()->unique()->values())
+    @if($heroDesign['template'])
+    @include('hero.reference')
+    @else
+    <section id="accueil" class="rdsa-hero hero-model-{{ $heroDesign['layout'] }} hero-position-{{ $heroSettings['position'] ?? 'left' }} hero-font-{{ $heroSettings['font'] ?? 'original' }}" data-hero-mode="{{ $heroSettings['mode'] ?? 'zoom' }}" data-hero-interval="{{ $heroSettings['interval'] ?? 6 }}" style="--hero-accent:{{ $heroDesign['active'] ? $heroDesign['accent'] : ($heroSettings['accent'] ?? '#d6ad54') }};--hero-overlay:{{ ($heroSettings['overlay'] ?? 55) / 100 }}">
 
         {{-- IMAGE D'ARRIÈRE-PLAN AVEC EFFET PARALLAXE --}}
         <div class="rdsa-hero-background">
-            <img
-                src="{{ asset($edition?->hero_background_path ?? 'images/gallery/rdsa2/rdsa2-img-h46.png') }}"
-                alt=""
-                aria-hidden="true">
+            @foreach($heroSlides as $heroSlide)<img class="hero-slide {{ $loop->first ? 'is-active' : '' }}" src="{{ asset($heroSlide) }}" alt="" aria-hidden="true" @if(!$loop->first) loading="lazy" @endif>@endforeach
         </div>
 
+        @if($heroSlides->count() > 1)<div class="hero-slide-controls" aria-label="Diaporama de la bannière"><button type="button" data-hero-prev aria-label="Image précédente">‹</button><button type="button" data-hero-pause aria-label="Mettre en pause le diaporama">Ⅱ</button><button type="button" data-hero-next aria-label="Image suivante">›</button></div>@endif
         {{-- Voile sombre pour préserver la lisibilité --}}
         <div class="rdsa-hero-overlay"></div>
 
@@ -237,6 +241,7 @@
         <div class="hero-bottom-wave"></div>
 
     </section>
+    @endif
 
     {{-- LA RDSA --}}
     <section id="rdsa" class="rdsa-about">

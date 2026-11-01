@@ -49,6 +49,10 @@
                         <span class="hint">{{ $participation->status === 'rejected' ? 'Demande refusée' : 'Aucun billet émis' }}</span>
                         @endif
                     @endforelse
+                    @if(in_array($participation->status, ['pending', 'confirmed']) && !$participation->tickets->contains('status', 'used'))
+                    <details class="reservation-rejection"><summary class="btn sm">Annuler la réservation</summary><form method="POST" action="{{ route('admin.participations.cancel', $participation) }}">@csrf<label class="hint" for="cancel-{{ $participation->id }}">Motif de l’annulation</label><input class="in" id="cancel-{{ $participation->id }}" name="reason" maxlength="1000" required><p class="hint">Le billet sera invalidé. L’historique reste conservé.</p><button class="btn sm bad" type="submit">Confirmer l’annulation</button></form></details>
+                    @endif
+                    @include('admin.partials.delete-reservation', ['reservation' => $participation])
                     </div>
                 </td>
             </tr>
@@ -59,4 +63,18 @@
     </table>
     @include('admin.partials.pagination', ['results' => $participations])
 </div>
+@endsection
+
+@section('admin-modal')
+@if($deleting)
+<div class="ov on"><div class="md" role="dialog" aria-modal="true" aria-labelledby="reservation-delete-title">
+<div class="media-editor-heading"><h3 id="reservation-delete-title">Supprimer cette réservation</h3><a class="btn media-editor-close" href="{{ route('admin.participations.index', ['q' => $deleting->reference]) }}" aria-label="Fermer"><i class="bi bi-x-lg" aria-hidden="true"></i></a></div>
+<p class="hint">La réservation de {{ $deleting->participant->full_name }} et son billet seront effacés. Cette action est irréversible. Un document déjà téléchargé ne peut pas être rappelé.</p>
+@if($errors->any())<div class="lock" role="alert">{{ $errors->first() }}</div>@endif
+<form method="POST" action="{{ route('admin.participations.destroy', $deleting) }}">@csrf @method('DELETE')
+<div class="f"><label for="delete-reference">Recopie {{ $deleting->reference }}</label><input class="in" id="delete-reference" name="confirmation_reference" value="{{ old('confirmation_reference') }}" required autocomplete="off"></div>
+<div class="f"><label for="delete-password">Ton mot de passe administrateur</label><input class="in" id="delete-password" name="current_password" type="password" required autocomplete="current-password"></div>
+<div class="act"><a class="btn" href="{{ route('admin.participations.index', ['q' => $deleting->reference]) }}">Annuler</a><button class="btn bad" type="submit">Supprimer définitivement</button></div></form>
+</div></div>
+@endif
 @endsection

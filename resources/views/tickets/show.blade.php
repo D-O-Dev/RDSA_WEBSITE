@@ -10,9 +10,10 @@
 .reservation-confirmation{max-width:620px;margin:0 auto 20px;padding:18px;border:1px solid #d6ad54;border-radius:14px;background:#201226;color:#fff}.header{border-bottom-color:#d6ad54}.primary{background:#102d69;border-color:#102d69}@media print{.reservation-confirmation{display:none}}
 @media screen{.kicker{color:#e8cd91}.footer{flex-wrap:wrap}}
 </style>
-@vite('resources/css/component-motion.css')
+@vite(['resources/css/component-motion.css', 'resources/css/site-designs.css'])
 </head>
-<body>
+@php($siteDesign = \App\Support\SiteDesign::resolve($ticket->participation->edition))
+<body data-site-design="{{ $siteDesign['preset'] }}" data-design-active="{{ $siteDesign['active'] ? 'true' : 'false' }}" data-design-effect="{{ $siteDesign['effect'] }}" data-design-radius="{{ $siteDesign['radius'] }}" style="{{ $siteDesign['style'] }}">
 @if(session('reservation_success'))<p class="reservation-confirmation" role="status">Réservation confirmée. Ton billet est prêt ; conserve-le ou télécharge son PDF.</p>@endif
 <main class="ticket">
 <header class="header">
@@ -34,6 +35,7 @@
 @if(!$download)
 <div class="actions">
 <a class="button primary" href="{{ request()->url() }}?download=1">Télécharger le PDF</a>
+@if($usable)<a class="button" data-qr-download data-filename="{{ $ticket->reference }}-qr.png" href="{{ request()->url() }}?qr=1">Enregistrer le QR</a><a class="button" href="https://wa.me/?text={{ rawurlencode('Mon billet RDSA : ' . request()->url() . "\nPDF : " . request()->url() . '?download=1') }}" target="_blank" rel="noopener noreferrer">Partager sur WhatsApp</a>@endif
 <button class="button" type="button" onclick="window.print()">Imprimer</button>
 <a class="button" href="{{ route('home') }}">Accueil</a>
 </div>

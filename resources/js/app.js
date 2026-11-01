@@ -1,4 +1,6 @@
 import './media.js';
+import './public-notifications.js';
+import './hero.js';
 import './interactions.js';
 import Collapse from 'bootstrap/js/dist/collapse';
 import './reservation.js';
@@ -60,14 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
         '.rdsa-hero-background img'
     );
 
-    if (!hero || !background) return;
+    if (!hero || !background || hero.dataset.heroMode !== 'static') return;
 
     // Respecter les préférences d'accessibilité.
     const reducedMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)'
     );
 
-    if (reducedMotion.matches) return;
+    if (reducedMotion.matches || document.body.dataset.designMotion === 'none') return;
 
     let ticking = false;
 

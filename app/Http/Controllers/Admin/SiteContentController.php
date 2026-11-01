@@ -23,14 +23,7 @@ class SiteContentController extends Controller
         foreach (SiteContent::fields() as $key => $field) {
             $rules[$key] = ['required', 'string', 'max:' . (($field['type'] ?? '') === 'textarea' ? 2000 : 500)];
             if (($field['type'] ?? '') === 'image') {
-                $rules[$key][] = function ($attribute, $value, $fail) {
-                    $root = realpath(public_path('images'));
-                    $path = is_string($value) && !str_contains($value, '..') ? realpath(public_path($value)) : false;
-                    if (!$root || !$path || !str_starts_with($path, $root . DIRECTORY_SEPARATOR) || !is_file($path)
-                        || !in_array(mime_content_type($path), ['image/jpeg', 'image/png', 'image/webp'])) {
-                        $fail('Choisis une image JPG, PNG ou WebP du dossier public/images.');
-                    }
-                };
+                $rules[$key] = ['required', 'string', 'max:2000', \App\Support\ImageSource::rule()];
             }
         }
         $labels = collect(SiteContent::fields())->map(fn ($field) => $field['label'])->all();

@@ -19,3 +19,6 @@ yarn-error.log
 /.vscode
 public/images/videos/*.MOV
 /storage/framework/dompdf/
+
+/deployment/*.tar.gz
+/deployment/*.sha256

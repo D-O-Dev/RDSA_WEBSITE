@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\UniqueAccountEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -35,9 +36,10 @@ class TeamController extends Controller
 
     private function save(Request $request, User $user)
     {
+        $request->merge(['email' => is_string($request->input('email')) ? mb_strtolower(trim($request->input('email'))) : $request->input('email')]);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => ['bail', 'required', 'string', 'email', 'max:255', new UniqueAccountEmail($user->id)],
             'role' => ['required', Rule::in(['admin', 'controller'])],
             'is_active' => ['required', 'boolean'],
             'current_password' => ['required', 'current_password:web'],
@@ -63,6 +65,7 @@ class TeamController extends Controller
             if (!empty($data['password'])) $target->password = $data['password'];
             if ($changedAccess || !empty($data['password'])) $target->remember_token = null;
             $target->save();
+            $request->attributes->set('admin_action_target', 'Compte #' . $target->id);
         });
         return redirect()->route('admin.team.index')->with('status', 'Compte enregistré.');
     }

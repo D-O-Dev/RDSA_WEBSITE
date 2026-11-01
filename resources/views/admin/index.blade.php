@@ -52,6 +52,7 @@
             @csrf
             @if($editing->exists) @method('PUT') @endif
             <div class="media-editor-heading"><h3 id="edition-title">{{ $editing->exists ? 'Modifier l’édition' : 'Nouvelle édition' }}</h3><a class="btn media-editor-close" href="{{ route('admin.index') }}" aria-label="Fermer le formulaire édition"><i class="bi bi-x-lg" aria-hidden="true"></i></a></div>
+            @if($editing->exists)<a class="btn sm" href="{{ route('admin.appearance.index', ['edition' => $editing->id]) }}"><i class="bi bi-palette"></i>Design et apparence</a>@endif
             @if($errors->any())
             <div class="lock" role="alert">
                 <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
@@ -79,11 +80,9 @@
             @if($mapPreview && $mapPreview['embed'])<div class="f"><label>Aperçu du repère enregistré</label><iframe src="{{ $mapPreview['embed'] }}" title="Carte du lieu de cette édition" loading="lazy" referrerpolicy="no-referrer-when-downgrade" style="display:block;width:100%;height:300px;border:0;border-radius:14px" allowfullscreen></iframe></div>@endif
             <div class="f"><label for="edition-description">Description</label><textarea class="in" id="edition-description" name="description" rows="3" maxlength="10000">{{ old('description', $editing->description) }}</textarea></div>
             @foreach(['hero_background_path' => 'Image de fond du hero'] as $field => $label)
-            <div class="f"><label for="{{ $field }}">{{ $label }}</label><select class="in" id="{{ $field }}" name="{{ $field }}">
-                    <option value="">Conserver l’image par défaut</option>
-                    @foreach($images as $image)<option value="{{ $image }}" @selected(old($field, $editing->$field) === $image)>{{ $image }}</option>@endforeach
-                </select></div>
+            <div class="f"><label for="{{ $field }}">{{ $label }}</label>@include('admin.partials.image-source', ['inputId' => $field, 'inputName' => $field, 'imageValue' => old($field, $editing->$field)])</div>
             @endforeach
+            @if($editing->exists)<div class="content-program-note"><i class="bi bi-palette"></i><p>Les modèles, les images et les animations se règlent dans <a href="{{ route('admin.appearance.index', ['edition' => $editing->id]) }}">Design et apparence</a>, avec un aperçu avant enregistrement.</p></div>@else<p class="hint">Après création, retrouve cette édition dans Design et apparence pour personnaliser tout le site.</p>@endif
             <div class="hint">Ouvrir cette édition ferme les inscriptions des autres éditions.</div>
             @foreach(['is_published' => 'Publier l’édition', 'is_active' => 'Ouvrir les inscriptions', 'is_archived' => 'Archiver l’édition'] as $field => $label)
             <label class="sw"><span>{{ $label }}</span><input type="hidden" name="{{ $field }}" value="0"><input type="checkbox" name="{{ $field }}" value="1" @checked(old($field, $editing->$field))></label>

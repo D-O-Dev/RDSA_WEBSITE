@@ -37,16 +37,8 @@ class EditionController extends Controller
 
     private function save(Request $request, Edition $edition)
     {
-        $image = function ($attribute, $value, $fail) {
-            $root = realpath(public_path());
-            $path = is_string($value) && !str_contains($value, '..')
-                ? realpath(public_path($value)) : false;
-            if (!$path || !str_starts_with($path, $root . DIRECTORY_SEPARATOR)
-                || !is_file($path) || !in_array(mime_content_type($path), ['image/jpeg', 'image/png', 'image/webp'])) {
-                $fail('Choisis une image JPG, PNG ou WebP existante dans public.');
-            }
-        };
         $data = $request->validate([
+            ...\App\Support\AppearanceRules::rules(),
             'name' => ['required', 'string', 'max:100'],
             'number' => ['required', 'integer', 'min:1', 'max:65535', Rule::unique('editions')->ignore($edition->id)],
             'theme' => ['required', 'string', 'max:255'],
@@ -63,8 +55,9 @@ class EditionController extends Controller
             'description' => ['nullable', 'string', 'max:10000'],
             'is_published' => ['required', 'boolean'], 'is_active' => ['required', 'boolean'],
             'is_archived' => ['required', 'boolean'],
-            'hero_background_path' => ['nullable', 'string', 'max:500', $image],
+            'hero_background_path' => ['nullable', 'string', 'max:2000', \App\Support\ImageSource::rule()],
         ]);
+        if (isset($data['hero_settings']['slides'])) $data['hero_settings']['slides'] = array_values(array_filter($data['hero_settings']['slides']));
         foreach (['contact_phone', 'contact_whatsapp'] as $field) {
             if (!empty($data[$field])) {
                 $number = \App\Services\ParticipationService::normalizePhone($data[$field]);
@@ -97,6 +90,7 @@ class EditionController extends Controller
             }
             $edition->fill($data)->save();
         });
+        $request->attributes->set('admin_action_target', 'Édition #' . $edition->id);
         return redirect()->route('admin.index')->with('status', 'Édition enregistrée.');
     }
 }

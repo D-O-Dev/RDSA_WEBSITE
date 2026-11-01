@@ -13,7 +13,7 @@ async function refreshConversation() {
     if (!target || document.hidden || target.dataset.loading === 'true') return;
     target.dataset.loading = 'true';
     try {
-        const response = await fetch(target.dataset.threadUrl, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+        const response = await fetch(target.dataset.threadUrl, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
         if (!response.ok || response.redirected) return;
         const data = await response.json();
         if (target.isConnected && data.version !== target.dataset.version) {
@@ -37,7 +37,7 @@ document.addEventListener('submit', async event => {
     const payload = new FormData(form);
     button.disabled = true; button.textContent = 'Envoi en cours…'; feedback.replaceChildren();
     try {
-        const response = await fetch(form.action, { method: 'POST', body: payload, headers: { Accept: 'application/json' }, credentials: 'same-origin', redirect: 'error' });
+        const response = await fetch(form.action, { method: 'POST', body: payload, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin', redirect: 'error' });
         if (response.status === 419) throw new Error('Le formulaire a expiré. Recharge la page avant de réessayer.');
         if (response.status === 429) throw new Error('Plusieurs messages ont déjà été envoyés. Patiente une minute.');
         let data;

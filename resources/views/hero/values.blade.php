@@ -1,0 +1,1 @@
+<div class="ref-values">@foreach(['feather', 'music-note-beamed', 'book', 'brightness-high'] as $valueIcon)<div><i class="bi bi-{{ $valueIcon }}" aria-hidden="true"></i><span>{{ $siteContent['value_' . $loop->iteration . '_title'] }}</span></div>@endforeach</div>

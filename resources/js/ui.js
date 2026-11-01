@@ -1,4 +1,4 @@
-const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedMotion = () => (matchMedia('(prefers-reduced-motion: reduce)').matches || document.body.dataset.designMotion === 'none');
 export function reveal(element) {
     if (!reducedMotion() && element?.animate) element.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 350, easing: 'ease' });
 }

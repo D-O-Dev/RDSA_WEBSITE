@@ -53,6 +53,12 @@ class TicketController extends Controller
         $ticket = Ticket::with(['participation.participant', 'participation.edition'])->where('reference', $reference)->first();
         abort_unless($ticket && $ticket->access_token_hash
             && hash_equals($ticket->access_token_hash, hash('sha256', $token)), 404);
+        if ($request->boolean('qr')) {
+            abort_unless($ticket->status === Ticket::STATUS_VALID && $ticket->participation->status === Participation::STATUS_CONFIRMED, 409);
+            $uri = $qr->dataUri($ticket);
+            return response(base64_decode(explode(',', $uri, 2)[1]))->header('Content-Type', 'image/svg+xml')
+                ->header('Content-Disposition', 'attachment; filename="' . $ticket->reference . '-qr.svg"')->header('Cache-Control', 'private, no-store');
+        }
         if ($request->boolean('download')) {
             return response(app(\App\Services\TicketDocumentService::class)->pdf($ticket))
                 ->header('Content-Type', 'application/pdf')

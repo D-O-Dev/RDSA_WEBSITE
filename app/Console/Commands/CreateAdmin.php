@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Rules\UniqueAccountEmail;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
@@ -20,12 +21,12 @@ class CreateAdmin extends Command
         }
         $data = [
             'name' => $this->ask('Nom complet'),
-            'email' => $this->ask('Adresse e-mail'),
+            'email' => mb_strtolower(trim((string) $this->ask('Adresse e-mail'))),
             'password' => $this->secret('Mot de passe (12 caractères, majuscule, minuscule, chiffre et symbole)'),
         ];
         $validator = Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'email', 'max:255', new UniqueAccountEmail],
             'password' => ['required', 'string', Password::min(12)->mixedCase()->numbers()->symbols()],
         ]);
         if ($validator->fails()) {

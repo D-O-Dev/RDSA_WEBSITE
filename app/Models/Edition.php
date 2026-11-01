@@ -26,10 +26,11 @@ class Edition extends Model
         'is_active',
         'is_published',
         'is_archived',
-        'hero_background_path',
+        'hero_background_path', 'hero_settings',
     ];
 
     protected $casts = [
+        'hero_settings' => 'array',
         'number' => 'integer',
         'starts_at' => 'datetime',
         'is_active' => 'boolean',

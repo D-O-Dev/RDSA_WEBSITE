@@ -48,4 +48,5 @@ $deliveryLabels = ['pending' => 'En attente', 'processing' => 'En cours', 'accep
 <form method="POST" action="{{ route('admin.whatsapp.retry', $ticket) }}">@csrf<div class="act"><button class="btn pri" type="submit">{{ $delivery ? 'Relancer l’envoi automatique' : 'Envoyer via Meta' }}</button></div></form>
 @endif
 </section>
+<section class="card" style="margin-top:18px"><h3>Gestion de la réservation</h3>@include('admin.partials.delete-reservation', ['reservation' => $ticket->participation])@if(!in_array($ticket->participation->status, ['cancelled', 'rejected']))<p class="hint">Pour supprimer ce billet, annule d’abord sa réservation depuis la liste des réservations. Une présence enregistrée reste protégée.</p><a class="btn" href="{{ route('admin.participations.index', ['q' => $ticket->participation->reference]) }}">Voir la réservation</a>@endif</section>
 @endsection

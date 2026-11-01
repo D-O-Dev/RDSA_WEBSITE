@@ -42,7 +42,8 @@ return [
         'footer_invitation' => ['label' => 'Message d’invitation', 'type' => 'textarea', 'default' => 'Réserve ta participation et prépare-toi à vivre un moment particulier dans la présence de Dieu.'],
         'footer_button' => ['label' => 'Texte du bouton de participation', 'default' => 'JE PARTICIPE'],
     ]],
-    'identity' => ['label' => 'Logo de la RDSA', 'icon' => 'award', 'description' => 'Le logo affiché dans le menu et en bas du site public.', 'fields' => [
-        'logo_path' => ['label' => 'Logo actuel', 'type' => 'image', 'default' => 'images/logo/logo.png'],
+    'identity' => ['label' => 'Logo de la RDSA', 'icon' => 'award', 'description' => 'Le logo public et le fond de l’administration, par lien image ou fichier existant.', 'fields' => [
+        'admin_background_path' => ['label' => 'Fond de l’administration', 'type' => 'image', 'default' => 'images/gallery/rdsa2/rdsa2-img-h42.jpeg'],
+        'logo_path' => ['label' => 'Logo du site', 'type' => 'image', 'default' => 'images/logo/logo.png'],
     ]],
 ];

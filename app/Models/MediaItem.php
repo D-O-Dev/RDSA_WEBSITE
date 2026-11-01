@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MediaItem extends Model
 {
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
     protected $guarded = ['id'];
     protected $casts = ['is_published' => 'boolean', 'sort_order' => 'integer'];
 

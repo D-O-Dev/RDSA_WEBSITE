@@ -34,6 +34,9 @@ Route::get('/', function () {
     $mediaItems = \App\Models\MediaItem::with('edition')->visible()->orderBy('sort_order')->orderByDesc('id')->get()->map(fn($item) => $item->publicData())->values();
     $contactSubmissionToken = app(\App\Services\ContactMessageService::class)->formToken(request());
     $siteContent = \App\Models\SiteContent::current();
+    $updates = \App\Models\SiteUpdate::visibleFor($edition)->orderBy('sort_order')->orderByDesc('id')->get();
+    $announcements = $updates->where('kind', 'announcement')->values();
+    $faqs = $updates->where('kind', 'faq')->values();
 
     return view('home', compact(
         'previousEditions',
@@ -41,7 +44,9 @@ Route::get('/', function () {
         'edition',
         'mediaItems',
         'contactSubmissionToken',
-        'siteContent'
+        'siteContent',
+        'announcements',
+        'faqs'
     ));
 })->name('home');
 
@@ -54,6 +59,12 @@ Route::get('/participations/confirmation/{reference}', [
     ParticipationController::class,
     'confirmation',
 ])->name('participations.confirmation');
+
+Route::get('/informations', function () {
+    $edition = Edition::where('is_active', true)->where('is_published', true)->where('is_archived', false)->orderByDesc('starts_at')->first();
+    $items = \App\Models\SiteUpdate::visibleFor($edition)->where('kind', 'announcement')->orderBy('sort_order')->orderByDesc('id')->get();
+    return response()->json(['items' => $items->map(fn ($item) => $item->only(['id', 'title', 'body', 'updated_at']))])->header('Cache-Control', 'no-store');
+})->middleware('throttle:120,1,public-information:')->name('public.information');
 
 Route::get('/mon-billet', [\App\Http\Controllers\TicketController::class, 'find'])->name('tickets.find');
 Route::post('/mon-billet', [\App\Http\Controllers\TicketController::class, 'lookup'])
@@ -76,7 +87,22 @@ Route::post('/admin/login', [\App\Http\Controllers\Admin\AuthController::class, 
     ->middleware('throttle:5,1,admin-login:')->name('admin.login');
 Route::post('/admin/logout', [\App\Http\Controllers\Admin\AuthController::class, 'logout'])
     ->middleware('auth')->name('admin.logout');
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'can:access-admin', 'can:use-admin-route'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'can:access-admin', 'can:use-admin-route', \App\Http\Middleware\RecordAdminAction::class])->group(function () {
+    Route::get('/appearance', [\App\Http\Controllers\Admin\AppearanceController::class, 'index'])->name('appearance.index');
+    Route::put('/appearance/{edition}', [\App\Http\Controllers\Admin\AppearanceController::class, 'update'])->name('appearance.update');
+    Route::post('/appearance/{edition}/preview', [\App\Http\Controllers\Admin\AppearanceController::class, 'preview'])->name('appearance.preview');
+    Route::get('/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/statistics', [\App\Http\Controllers\Admin\StatisticsController::class, 'index'])->name('statistics.index');
+    Route::get('/statistics/export', [\App\Http\Controllers\Admin\StatisticsController::class, 'export'])->name('statistics.export');
+    Route::get('/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit.index');
+    Route::delete('/media/{mediaItem}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy');
+    Route::delete('/participations/{participation}', [\App\Http\Controllers\Admin\ParticipationController::class, 'destroy'])->middleware('throttle:5,1,reservation-delete:')->name('participations.destroy');
+    Route::post('/participations/{participation}/cancel', [\App\Http\Controllers\Admin\ParticipationController::class, 'cancel'])->name('participations.cancel');
+    Route::get('/updates', [\App\Http\Controllers\Admin\SiteUpdateController::class, 'index'])->name('updates.index');
+    Route::post('/updates', [\App\Http\Controllers\Admin\SiteUpdateController::class, 'store'])->name('updates.store');
+    Route::put('/updates/{siteUpdate}', [\App\Http\Controllers\Admin\SiteUpdateController::class, 'update'])->name('updates.update');
+    Route::patch('/updates/{siteUpdate}/publication', [\App\Http\Controllers\Admin\SiteUpdateController::class, 'publish'])->name('updates.publish');
+    Route::delete('/updates/{siteUpdate}', [\App\Http\Controllers\Admin\SiteUpdateController::class, 'destroy'])->name('updates.destroy');
     Route::get('/calendar', [\App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('calendar.index');
     Route::post('/calendar/events', [\App\Http\Controllers\Admin\CalendarController::class, 'store'])->name('calendar.store');
     Route::put('/calendar/events/{calendarEvent}', [\App\Http\Controllers\Admin\CalendarController::class, 'update'])->name('calendar.update');
@@ -85,6 +111,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'can:access-admin', 
     Route::post('/team', [\App\Http\Controllers\Admin\TeamController::class, 'store'])->middleware('throttle:10,1,team-write:')->name('team.store');
     Route::put('/team/{user}', [\App\Http\Controllers\Admin\TeamController::class, 'update'])->middleware('throttle:10,1,team-write:')->name('team.update');
     Route::get('/account', [\App\Http\Controllers\Admin\AccountController::class, 'edit'])->name('account.edit');
+    Route::put('/account/profile', [\App\Http\Controllers\Admin\AccountController::class, 'profile'])->middleware('throttle:5,1,account-profile:')->name('account.profile');
+    Route::post('/account/sessions/revoke', [\App\Http\Controllers\Admin\AccountController::class, 'revokeSessions'])->middleware('throttle:5,1,account-sessions:')->name('account.sessions.revoke');
     Route::put('/account', [\App\Http\Controllers\Admin\AccountController::class, 'update'])->middleware('throttle:5,1,account-password:')->name('account.update');
     Route::get('/content', [\App\Http\Controllers\Admin\SiteContentController::class, 'edit'])->name('content.edit');
     Route::put('/content', [\App\Http\Controllers\Admin\SiteContentController::class, 'update'])->name('content.update');

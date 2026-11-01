@@ -23,7 +23,7 @@ class AdminParticipationRenderingTest extends TestCase
         foreach ([$ticket->participation, $pending, $rejected, $cancelled] as $record) {
             $row = $x->query('//tbody/tr[td/b="' . $record->reference . '"]')->item(0);
             $this->assertNotNull($row);
-            $this->assertSame($record->id === $pending->id ? 2 : 0, $x->query('.//form', $row)->length);
+            $this->assertSame($record->id === $pending->id ? 3 : ($record->id === $ticket->participation_id ? 1 : 0), $x->query('.//form', $row)->length);
             if ($record->id === $ticket->participation_id) {
                 $this->assertStringContainsString('Voir le billet', $row->textContent);
                 $this->assertStringNotContainsString('Aucun billet émis', $row->textContent);
@@ -32,7 +32,7 @@ class AdminParticipationRenderingTest extends TestCase
             if ($record->id === $pending->id) {
                 $this->assertStringContainsString('Valider et émettre', $row->textContent);
                 $this->assertStringNotContainsString('Aucun billet émis', $row->textContent);
-                $this->assertSame(1, $x->query('.//details[not(@open)]', $row)->length);
+                $this->assertSame(2, $x->query('.//details[not(@open)]', $row)->length);
             }
             if ($record->id === $rejected->id) $this->assertStringContainsString('Demande refusée', $row->textContent);
         }

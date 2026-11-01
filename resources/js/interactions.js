@@ -1,3 +1,4 @@
+import './mobile-forms.js';
 // Shared feedback for the existing Blade pages; no content depends on animation.
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const seen = new WeakSet();
@@ -5,14 +6,16 @@ const observer = 'IntersectionObserver' in window ? new IntersectionObserver(ent
     for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         observer.unobserve(entry.target);
-        if (!reduced.matches) entry.target.animate?.([
+        if (!reduced.matches && document.body.dataset.designMotion !== 'none') entry.target.animate?.([
             { opacity: .25, transform: 'translateY(12px)' },
             { opacity: 1, transform: 'translateY(0)' },
         ], { duration: 420, easing: 'cubic-bezier(.2,.7,.2,1)' });
     }
 }, { threshold: .08 }) : null;
+const revealSelector = '.card,.edition-card,.contact-info-card,.rdsa-album-box,.ticket-launch,.ticket';
+export function releaseContent(root) { root?.querySelectorAll(revealSelector).forEach(element => observer?.unobserve(element)); }
 export function animateContent(root = document) {
-    root.querySelectorAll('.card,.edition-card,.contact-info-card,.rdsa-album-box,.ticket-launch,.ticket').forEach(element => {
+    root.querySelectorAll(revealSelector).forEach(element => {
         if (seen.has(element)) return;
         seen.add(element); observer?.observe(element);
     });
@@ -21,9 +24,9 @@ animateContent();
 
 // A subtle press response follows pointer and keyboard activation without adding markup.
 document.addEventListener('click', event => {
-    if (reduced.matches) return;
+    if (reduced.matches || document.body.dataset.designMotion === 'none') return;
     const button = event.target.closest('button,.btn,.button,.rdsa-primary-button,.rdsa-outline-button,.ticket-launch');
-    if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
+    if (!button || button.closest('.side') || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
     button.animate?.([{ scale: '1' }, { scale: '.97', offset: .4 }, { scale: '1' }], { duration: 220, easing: 'ease-out' });
 });
 
@@ -49,3 +52,22 @@ document.addEventListener('submit', event => {
     });
 });
 window.addEventListener('pageshow', () => { for (const form of pending.keys()) unlock(form); });
+
+// Save the existing vector QR as a PNG using the browser, without a PHP image extension.
+document.addEventListener('click', async event => {
+    const link = event.target.closest('[data-qr-download]'), source = document.querySelector('img.qr');
+    if (!link || !source) return;
+    event.preventDefault();
+    try {
+        const img = new Image(); img.src = source.src; await img.decode();
+        const canvas = document.createElement('canvas'); canvas.width = canvas.height = 640;
+        canvas.getContext('2d').drawImage(img, 0, 0, 640, 640);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        if (!blob) throw new Error();
+        const url = URL.createObjectURL(blob), download = document.createElement('a');
+        download.href = url; download.download = link.dataset.filename; download.click();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } catch { location.assign(link.href); }
+});
+
+document.documentElement.classList.add('rdsa-interactions-ready');

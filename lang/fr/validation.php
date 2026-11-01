@@ -2,6 +2,7 @@
 
 return [
     'accepted' => 'Confirme le champ « :attribute ».',
+    'after' => 'La date du champ « :attribute » doit être après le :date.',
     'after_or_equal' => 'La date du champ « :attribute » doit être le :date ou après.',
     'before' => 'La date du champ « :attribute » doit être avant le :date.',
     'array' => 'Le champ « :attribute » doit contenir une liste valide.',
@@ -51,7 +52,7 @@ return [
         'name' => 'nom complet', 'email' => 'adresse e-mail', 'password' => 'mot de passe',
         'password_confirmation' => 'confirmation du mot de passe', 'current_password' => 'mot de passe actuel',
         'role' => 'accès autorisé', 'is_active' => 'compte actif', 'phone' => 'téléphone', 'full_name' => 'nom complet',
-        'starts_at' => 'date et heure', 'location' => 'lieu', 'notes' => 'informations pour l’équipe', 'month' => 'mois', 'date' => 'date choisie',
+        'starts_at' => 'date et heure', 'location' => 'lieu', 'notes' => 'informations pour l’équipe', 'ends_at' => 'fin de l’affichage', 'month' => 'mois', 'date' => 'date choisie',
         'title' => 'titre', 'video_url' => 'lien vidéo', 'upload' => 'fichier à importer',
     ],
 ];
