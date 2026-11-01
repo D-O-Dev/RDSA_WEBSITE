@@ -33,6 +33,7 @@ cleanup() {
             mkdir -p "$backup/restore"
             tar -xf "$backup/code.tar" -C "$backup/restore"
             rsync -ac --delete "${excludes[@]}" "$backup/restore/" "$target/"
+            rm -f -- "$target"/bootstrap/cache/*.php
             (cd "$target" && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan config:cache)
         fi
         if (( maintenance && ! migration_started )); then
@@ -58,6 +59,7 @@ tar -cf "$backup/code.tar" --exclude='./.env' --exclude='./storage' --exclude='.
 mutated=1
 rsync -ac --delete-delay "${excludes[@]}" "$release/" "$target/"
 [[ $(sha256sum .env | cut -d ' ' -f 1) == "$env_hash" ]]
+rm -f -- "$target"/bootstrap/cache/*.php
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
@@ -73,6 +75,11 @@ curl --fail --silent --show-error --retry 3 --retry-delay 2 --max-time 30 "$url/
 php -r '$data=json_decode(file_get_contents($argv[1]),true);exit(($data["status"]??null)==="ok"?0:1);' "$backup/health.json"
 curl --fail --silent --show-error --retry 2 --retry-delay 2 --max-time 30 "$url/" -o /dev/null
 curl --fail --silent --show-error --retry 2 --retry-delay 2 --max-time 30 "$url/admin/login" -o /dev/null
+php -r '$manifest=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);foreach($manifest as $entry){if(($entry["isEntry"]??false)&&preg_match("/\\.(css|js)$/",$entry["file"]??""))echo $entry["file"].PHP_EOL;}' "$target/public/build/manifest.json" |
+while IFS= read -r asset; do
+    [[ $asset =~ ^assets/[a-zA-Z0-9_.-]+\.(css|js)$ ]] || exit 1
+    curl --fail --silent --show-error --retry 2 --retry-delay 2 --max-time 30 "$url/build/$asset" -o /dev/null
+done
 [[ $(sha256sum .env | cut -d ' ' -f 1) == "$env_hash" ]]
 printf '%s\n' "$run" > "$state/last-run"
 printf '{"sha":"%s","run":%s,"deployed_at":"%s"}\n' "$sha" "$run" "$(date -u +%FT%TZ)" > "$state/last-success.json"

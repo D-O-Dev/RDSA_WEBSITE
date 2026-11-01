@@ -84,6 +84,9 @@ clé de déploiement.
    caches sont appliqués, puis le contrôle de production est lancé.
 6. Le site rouvre et `/health`, l’accueil et la connexion sont vérifiés. Le SHA
    et le numéro du workflow réussi sont enregistrés dans `last-success.json`.
+   Les fichiers CSS et JavaScript déclarés dans le manifeste sont aussi vérifiés
+   par HTTPS. Les caches PHP de bootstrap sont régénérés pour les dépendances
+   de la nouvelle version.
 
 ### Secret GitHub requis
 
@@ -104,8 +107,10 @@ de dépôt d’un run déjà démarré peuvent conserver leur ancienne valeur.
 
 Ne pas utiliser le jeton API alwaysdata, la clé APP_KEY, un mot de passe SQL ou
 la clé SSH personnelle pour ce secret. Le secret est géré par GitHub et ne doit
-jamais être commité. Le workflow ne sera fonctionnel qu’une fois ce secret ajouté
-et un premier déploiement réussi dans [Actions](https://github.com/D-O-Dev/RDSA_WEBSITE/actions).
+jamais être commité. Le secret a été ajouté et le premier déploiement complet a réussi le
+1er novembre 2026 : [workflow n°3](https://github.com/D-O-Dev/RDSA_WEBSITE/actions/runs/41265898231).
+Le SHA livré est enregistré sur le serveur ; les sauvegardes privées ont été
+vérifiées. Les prochains push sur `main` suivent automatiquement ce parcours.
 
 ### Si une livraison échoue
 

@@ -25,6 +25,7 @@ class DeploymentScriptTest extends TestCase
         file_put_contents($this->target.'/.env', 'PRIVATE_PRODUCTION_KEY=unchanged');
         file_put_contents($this->target.'/storage/participants.txt', 'real reservations to preserve');
         file_put_contents($this->target.'/bootstrap/cache/preserved.txt', 'cache directory preserved');
+        file_put_contents($this->target.'/bootstrap/cache/old-provider.php', '<?php /* obsolete provider cache */');
         file_put_contents($this->target.'/obsolete.php', 'old file');
         file_put_contents($this->release.'/artisan', 'new application');
         file_put_contents($this->release.'/new.php', 'new file');
@@ -41,10 +42,12 @@ if [[ $1 == *backup-database.php ]]; then
     exit 0
 fi
 if [[ $1 == -r ]]; then
+    if [[ $3 == */manifest.json ]]; then printf 'assets/entry.css\n'; exit 0; fi
     grep -q '"status":"ok"' "$3"
     exit
 fi
 command=${2:-}
+if [[ $command == config:clear && -f bootstrap/cache/old-provider.php ]] && grep -q 'new application' artisan; then exit 75; fi
 if [[ ${FAIL_AT:-} == "$command" && ! -f storage/failure-seen ]]; then
     touch storage/failure-seen
     exit 1
@@ -54,7 +57,7 @@ if [[ $command == up ]]; then rm -f storage/framework/down; fi
 BASH;
         file_put_contents($this->directory.'/bin/php', $php);
         chmod($this->directory.'/bin/php', 0700);
-        file_put_contents($this->directory.'/bin/curl', "#!/usr/bin/env bash\nif [[ \${FAIL_AT:-} == health ]]; then exit 22; fi\nprintf '{\"status\":\"ok\"}'\n");
+        file_put_contents($this->directory.'/bin/curl', "#!/usr/bin/env bash\nif [[ \${FAIL_AT:-} == health ]]; then exit 22; fi\nif [[ \${FAIL_AT:-} == assets && \$* == *entry.css* ]]; then exit 22; fi\nprintf '{\"status\":\"ok\"}'\n");
         chmod($this->directory.'/bin/curl', 0700);
         $this->environment = ['PATH' => $this->directory.'/bin:'.getenv('PATH'), 'RDSA_DEPLOY_ROOT'=>$this->target,
             'RDSA_DEPLOY_STATE'=>$this->state, 'RDSA_DEPLOY_URL'=>'https://rdsa.invalid'];
@@ -124,6 +127,14 @@ BASH;
         $result = $this->deploy('health');
         $this->assertFalse($result->isSuccessful());
         $this->assertSame('old application', file_get_contents($this->target.'/artisan'));
+        $this->assertFileExists($this->target.'/storage/framework/down');
+        $this->assertFileDoesNotExist($this->state.'/last-success.json');
+    }
+
+    public function test_missing_public_asset_blocks_release_success(): void
+    {
+        $result = $this->deploy('assets');
+        $this->assertFalse($result->isSuccessful());
         $this->assertFileExists($this->target.'/storage/framework/down');
         $this->assertFileDoesNotExist($this->state.'/last-success.json');
     }

@@ -7,8 +7,8 @@ Les participations sont gratuites : une personne par réservation, aucun paiemen
 en ligne. Le site est déployé sur https://rdsa.alwaysdata.net avec une base neuve.
 Les éditions et contenus doivent être configurés dans l’administration avant
 l’ouverture des inscriptions. Le workflow GitHub Actions prépare le déploiement continu sur `main` : tests,
-compilation, sauvegarde puis mise à jour du serveur. Le secret dédié
-`ALWAYSDATA_SSH_KEY` doit être configuré pour activer la livraison.
+compilation, sauvegarde puis mise à jour du serveur. La clé dédiée
+`ALWAYSDATA_SSH_KEY` est configurée et un premier déploiement complet a réussi.
 
 ## Parcours des billets
 
