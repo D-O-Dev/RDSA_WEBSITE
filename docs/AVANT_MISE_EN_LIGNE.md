@@ -263,3 +263,11 @@ Le SMTP et WhatsApp automatique demandent de vrais accès fournisseur. Les
 notifications demandent une autorisation sur chaque appareil. La sauvegarde
 quotidienne reste à activer selon l’espace disponible. Le planificateur doit
 être vérifié après installation ; son dernier passage apparaît dans Sauvegardes.
+
+
+Le planificateur alwaysdata a été créé depuis l’API du panneau : tâche `37171`,
+type commande, toutes les minutes, utilisateur SSH `rdsa`, répertoire `rdsa`,
+commande `php /home/rdsa/rdsa/artisan schedule:run --no-interaction`.
+Sur le Public Cloud alwaysdata, utiliser **Avancé → Tâches planifiées** ;
+`crontab -e` n’est pas disponible. Les journaux sont dans `admin/logs/jobs/`.
+Voir la [documentation officielle](https://help.alwaysdata.com/en/docs/web-hosting/tasks/).

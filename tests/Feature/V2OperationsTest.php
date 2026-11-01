@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Tests\Concerns\CreatesTicketRecords;
 use Tests\TestCase;
 
@@ -172,5 +173,25 @@ class V2OperationsTest extends TestCase
         $data['smtp_password'] = '';
         $this->put('/admin/mail-settings', $data)->assertSessionHasNoErrors();
         $this->assertFalse(app(AdminMailService::class)->configure());
+    }
+
+    public function test_restore_refuses_to_overwrite_an_in_flight_whatsapp_delivery(): void
+    {
+        Storage::fake('public');
+        $this->owner();
+        $ticket = $this->makeTicket();
+        $delivery = WhatsappDelivery::create(['ticket_id' => $ticket->id, 'status' => 'pending']);
+        $service = app(SiteBackupService::class);
+        $id = $service->create();
+        $this->backups[] = $id;
+        $delivery->update(['status' => 'processing']);
+        try {
+            $service->restore($id);
+            $this->fail('Une restauration ne doit pas remplacer un envoi en cours.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('backup', $e->errors());
+        }
+        $this->assertSame('processing', $delivery->fresh()->status);
+        $this->assertDatabaseHas('tickets', ['id' => $ticket->id]);
     }
 }

@@ -47,7 +47,7 @@ class SiteBackupService
             $schema[$table] = Schema::getColumnListing($table);
         }
 
-return $schema;
+        return $schema;
     }
 
     public function create(): string
@@ -94,7 +94,10 @@ return $schema;
 
             return $id;
         } catch (\Throwable $e) {
-            $zip->close();
+            try {
+                $zip->close();
+            } catch (\Throwable) {
+            }
             @unlink($path);
             throw $e;
         }
@@ -136,6 +139,10 @@ return $schema;
                 }
             }
             DB::transaction(function () use ($data) {
+                $activeDeliveries = DB::table('whatsapp_deliveries')->orderBy('id')->lockForUpdate()->get();
+                if ($activeDeliveries->contains('status', 'processing')) {
+                    throw ValidationException::withMessages(['backup' => 'Un envoi WhatsApp est en cours. Attends son résultat avant de restaurer la sauvegarde.']);
+                }
                 // Ne jamais réexpédier automatiquement un message déjà parti après cette sauvegarde.
                 $tables = $data['tables'];
                 foreach ($tables['whatsapp_deliveries'] as &$row) {

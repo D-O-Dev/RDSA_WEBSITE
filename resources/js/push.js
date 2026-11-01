@@ -12,6 +12,9 @@ document.addEventListener('click', async event => {
     button.disabled = true;
     try {
         if (!isSecureContext || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) throw new Error('Les notifications ne sont pas disponibles dans ce navigateur. Sur iPhone, ajoute le site à l’écran d’accueil puis ouvre-le depuis son icône.');
+        // Demander l’autorisation pendant le clic, avant toute attente réseau.
+        const permission = Notification.permission === 'default' ? Notification.requestPermission() : Promise.resolve(Notification.permission);
+        if (await permission !== 'granted') throw new Error('Autorise les notifications dans les réglages du navigateur pour les activer.');
         const registration = await navigator.serviceWorker.register('/rdsa-push-worker.js');
         await navigator.serviceWorker.ready;
         const key = 'rdsa-push-' + button.dataset.pushScope;
@@ -22,7 +25,6 @@ document.addEventListener('click', async event => {
             await existing.unsubscribe(); localStorage.removeItem(key);
             button.textContent = 'Activer les notifications sur cet appareil'; feedback.textContent = 'Notifications désactivées.'; return;
         }
-        if (await Notification.requestPermission() !== 'granted') throw new Error('Autorise les notifications dans les réglages du navigateur pour les activer.');
         const { publicKey } = await post(button.dataset.pushPrepare, {});
         const subscription = existing || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: decode(publicKey) });
         const { token } = await post(button.dataset.pushStore, subscription.toJSON());
