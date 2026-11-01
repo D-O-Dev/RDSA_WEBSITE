@@ -83,11 +83,25 @@ jobs:
           fi
           key="$RUNNER_TEMP/rdsa-ci-key"
           trap 'rm -f -- "$key"' EXIT
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$key"
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > "$key"
           chmod 600 "$key"
+          if ! ssh-keygen -y -f "$key" > /dev/null 2>&1; then
+            echo '::error::Le secret ALWAYSDATA_SSH_KEY doit contenir toute la clé privée OpenSSH du fichier github-actions-deploy-ed25519, avec les lignes BEGIN et END, pas son chemin ni le fichier .pub.'
+            exit 1
+          fi
           options=(-o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deployment/alwaysdata_known_hosts -o ConnectTimeout=20 -i "$key")
           archive="$RUNNER_TEMP/release/rdsa-release.tar.gz"
           digest=$(sha256sum "$archive" | cut -d ' ' -f 1)
-          ssh "${options[@]}" rdsa@ssh-rdsa.alwaysdata.net 'install -d -m 700 /home/rdsa/rdsa-private/ci/incoming'
+          if ! ssh "${options[@]}" rdsa@ssh-rdsa.alwaysdata.net 'install -d -m 700 /home/rdsa/rdsa-private/ci/incoming' 2> "$RUNNER_TEMP/rdsa-ssh-error"; then
+            if grep -q 'Permission denied' "$RUNNER_TEMP/rdsa-ssh-error"; then
+              echo '::error::La clé du secret GitHub est lisible mais refusée par le serveur. Vérifier que le secret contient la clé dédiée github-actions-deploy-ed25519.'
+            elif grep -Eiq 'host key verification|host identification' "$RUNNER_TEMP/rdsa-ssh-error"; then
+              echo '::error::Empreinte du serveur SSH différente de la référence vérifiée ; ne pas désactiver le contrôle.'
+            else
+              echo '::error::Connexion SSH impossible depuis le runner GitHub ; voir le message réseau dans le journal.'
+            fi
+            cat "$RUNNER_TEMP/rdsa-ssh-error" >&2
+            exit 1
+          fi
           scp "${options[@]}" "$archive" "rdsa@ssh-rdsa.alwaysdata.net:/home/rdsa/rdsa-private/ci/incoming/$DEPLOY_SHA-$DEPLOY_RUN-$DEPLOY_ATTEMPT.tar.gz"
           ssh "${options[@]}" rdsa@ssh-rdsa.alwaysdata.net "bash -s -- '$DEPLOY_SHA' '$DEPLOY_RUN' '$DEPLOY_ATTEMPT' '$digest'" < deployment/receive-release.sh
