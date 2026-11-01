@@ -6,7 +6,9 @@ les fichiers vidéo locaux ont été retirés.
 Les participations sont gratuites : une personne par réservation, aucun paiement
 en ligne. Le site est déployé sur https://rdsa.alwaysdata.net avec une base neuve.
 Les éditions et contenus doivent être configurés dans l’administration avant
-l’ouverture des inscriptions. Les push Git ne déclenchent pas encore de déploiement automatique.
+l’ouverture des inscriptions. Le workflow GitHub Actions prépare le déploiement continu sur `main` : tests,
+compilation, sauvegarde puis mise à jour du serveur. Le secret dédié
+`ALWAYSDATA_SSH_KEY` doit être configuré pour activer la livraison.
 
 ## Parcours des billets
 

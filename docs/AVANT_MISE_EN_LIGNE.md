@@ -59,28 +59,62 @@ caches locaux, `public/hot`, les captures de test ou les fichiers privés.
 Les données de production sont indépendantes du code : une mise à jour doit
 conserver les participants, réservations, billets, médias importés et réglages.
 
-## Déploiement automatique : état actuel
+## Déploiement continu GitHub Actions
 
-Le dépôt local utilise `git@github.com:D-O-Dev/RDSA_WEBSITE.git`, branche `main`.
-**Aucun workflow de déploiement automatique n’est actuellement configuré.**
-Un `git push` seul ne met donc pas le site alwaysdata à jour.
+Le dépôt utilise `git@github.com:D-O-Dev/RDSA_WEBSITE.git`, branche `main`.
+Le workflow `.github/workflows/deploy.yml` contrôle les push et les pull requests
+vers `main`. Seuls les push sur `main` et les lancements manuels depuis `main`
+peuvent livrer en production. Une pull request exécute les tests sans accès à la
+clé de déploiement.
 
-La version locale contient encore des modifications à versionner avant de
-brancher une automatisation sur le dépôt. Le code actuellement en ligne provient
-du paquet préparé depuis l’espace de travail, pas d’un clone du dépôt distant.
+1. GitHub installe PHP 8.4 et Node 22, les dépendances verrouillées et compile
+   les fichiers publics. Il exécute les tests PHP et les essais des scripts de
+   déploiement dans des dossiers temporaires, sans toucher à la production.
+2. Si les contrôles passent, il construit une archive avec les dépendances de
+   production. La livraison ne contient ni `.env`, ni stockage, ni base locale,
+   ni fichier privé. Le job de livraison reçoit uniquement une clé SSH dédiée.
+3. Alwaysdata vérifie l’empreinte de l’archive, prend un verrou et ignore un
+   workflow plus ancien qu’une version déjà livrée. La clé du serveur SSH est
+   vérifiée avec `deployment/alwaysdata_known_hosts`.
+4. Le site passe brièvement en maintenance. Une sauvegarde SQL, de la
+   configuration et du code est conservée **sur le serveur**, dans le dossier
+   privé `/home/rdsa/rdsa-private/ci`. Aucune sauvegarde n’est envoyée à GitHub.
+5. Les fichiers sont mis à jour, en préservant le `.env`, `storage`, le lien
+   public des fichiers importés et les dossiers de cache. Les migrations et
+   caches sont appliqués, puis le contrôle de production est lancé.
+6. Le site rouvre et `/health`, l’accueil et la connexion sont vérifiés. Le SHA
+   et le numéro du workflow réussi sont enregistrés dans `last-success.json`.
 
-Une automatisation GitHub Actions pourra suivre ce parcours :
+### Secret GitHub requis
 
-1. Push sur la branche de production.
-2. Installation des dépendances, tests et compilation sur GitHub.
-3. Transfert du code validé par SSH, avec une clé dédiée conservée dans les
-   secrets GitHub Actions et une empreinte du serveur vérifiée.
-4. Application des migrations nécessaires et reconstruction des caches.
-5. Contrôle du site ; conservation du `.env` et du stockage de production.
+Dans [les secrets Actions du dépôt](https://github.com/D-O-Dev/RDSA_WEBSITE/settings/secrets/actions),
+créer **ALWAYSDATA_SSH_KEY** avec le contenu du fichier local privé
+`storage/app/rdsa/private/github-actions-deploy-ed25519` (sans `.pub`). Cette
+clé est dédiée à GitHub Actions ; sa partie publique est déjà autorisée sur le
+serveur avec les redirections et le terminal interactif désactivés.
 
-Elle ne doit jamais rejouer l’installation neuve, importer une base locale,
-régénérer `APP_KEY` ou lancer `migrate:fresh`. Son activation et l’enregistrement
-d’un secret SSH chez GitHub restent une étape distincte à configurer.
+Ne pas utiliser le jeton API alwaysdata, la clé APP_KEY, un mot de passe SQL ou
+la clé SSH personnelle pour ce secret. Le secret est géré par GitHub et ne doit
+jamais être commité. Le workflow ne sera fonctionnel qu’une fois ce secret ajouté
+et un premier déploiement réussi dans [Actions](https://github.com/D-O-Dev/RDSA_WEBSITE/actions).
+
+### Si une livraison échoue
+
+Un échec de tests ou de compilation ne change rien au serveur. Un échec de
+sauvegarde n’écrase pas le code existant. Un échec avant les migrations restaure
+le code et rouvre le site. Une maintenance manuelle déjà présente bloque le job
+sans la lever.
+
+Un échec après le début des migrations restaure le code mais **conserve la
+maintenance** : il faut examiner les logs Actions et le dossier privé `ci/failed`
+avant de rouvrir. La base n’est jamais restaurée automatiquement, afin de ne
+pas perdre de données nouvelles. La sauvegarde privée sert à une récupération
+contrôlée. `ci/previous` conserve la dernière sauvegarde précédant une livraison
+réussie ; `ci/failed` la dernière livraison échouée.
+
+Les migrations futures doivent être compatibles avec le code précédent pendant
+la livraison. Le pipeline ne lance ni `migrate:fresh`, ni `key:generate`, ni import
+de base locale, ni modification des comptes.
 
 Documentation : [secrets GitHub Actions](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets),
 [SSH alwaysdata](https://help.alwaysdata.com/en/docs/web-hosting/remote-access/ssh/).

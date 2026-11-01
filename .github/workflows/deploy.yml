@@ -1,0 +1,93 @@
+name: RDSA — tests et déploiement
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Tester et compiler
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea # v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, fileinfo, pdo_mysql, pdo_sqlite, sqlite3
+          coverage: none
+          tools: composer:v2
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Préparer Laravel
+        run: |
+          cp .env.example .env
+          composer install --prefer-dist --no-interaction --no-progress
+          php artisan key:generate --force
+      - name: Compiler les fichiers publics
+        run: |
+          npm ci
+          npm run build
+      - name: Exécuter les tests
+        run: |
+          for script in deployment/*.sh; do bash -n "$script"; done
+          php artisan test
+      - name: Préparer la livraison de production
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
+          composer check-platform-reqs --no-dev
+          bash deployment/package-release.sh "$RUNNER_TEMP/rdsa-release.tar.gz"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        with:
+          name: rdsa-${{ github.sha }}
+          path: ${{ runner.temp }}/rdsa-release.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+
+  deploy:
+    name: Mettre à jour alwaysdata
+    needs: verify
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    concurrency:
+      group: rdsa-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        with:
+          name: rdsa-${{ github.sha }}
+          path: ${{ runner.temp }}/release
+      - name: Livrer le code vérifié
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+          DEPLOY_SHA: ${{ github.sha }}
+          DEPLOY_RUN: ${{ github.run_number }}
+          DEPLOY_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -Eeuo pipefail
+          if [[ -z "$SSH_PRIVATE_KEY" ]]; then
+            echo 'Ajouter le secret GitHub ALWAYSDATA_SSH_KEY pour activer la livraison.' >&2
+            exit 1
+          fi
+          key="$RUNNER_TEMP/rdsa-ci-key"
+          trap 'rm -f -- "$key"' EXIT
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$key"
+          chmod 600 "$key"
+          options=(-o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deployment/alwaysdata_known_hosts -o ConnectTimeout=20 -i "$key")
+          archive="$RUNNER_TEMP/release/rdsa-release.tar.gz"
+          digest=$(sha256sum "$archive" | cut -d ' ' -f 1)
+          ssh "${options[@]}" rdsa@ssh-rdsa.alwaysdata.net 'install -d -m 700 /home/rdsa/rdsa-private/ci/incoming'
+          scp "${options[@]}" "$archive" "rdsa@ssh-rdsa.alwaysdata.net:/home/rdsa/rdsa-private/ci/incoming/$DEPLOY_SHA-$DEPLOY_RUN-$DEPLOY_ATTEMPT.tar.gz"
+          ssh "${options[@]}" rdsa@ssh-rdsa.alwaysdata.net "bash -s -- '$DEPLOY_SHA' '$DEPLOY_RUN' '$DEPLOY_ATTEMPT' '$digest'" < deployment/receive-release.sh
