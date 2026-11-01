@@ -4,6 +4,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+  <link rel="apple-touch-icon" href="{{ asset('images/logo/logo.png') }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#080d1a">
   <style>
     :root {
       --bgimg: url({!! json_encode(asset(\App\Models\SiteContent::current()['admin_background_path']), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!})

@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "RDSA — Prière et adoration",
+  "short_name": "RDSA",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#080d1a",
+  "theme_color": "#080d1a",
+  "icons": [
+    { "src": "/images/logo/logo.png", "sizes": "3000x3000", "type": "image/png", "purpose": "any" }
+  ]
+}
