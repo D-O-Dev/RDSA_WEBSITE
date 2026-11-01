@@ -5,8 +5,8 @@ Les vidéos de la médiathèque utilisent uniquement des liens de plateformes ;
 les fichiers vidéo locaux ont été retirés.
 Les participations sont gratuites : une personne par réservation, aucun paiement
 en ligne. Le site est déployé sur https://rdsa.alwaysdata.net avec une base neuve.
-Les éditions et contenus doivent être configurés dans l’administration avant
-l’ouverture des inscriptions. Le workflow GitHub Actions prépare le déploiement continu sur `main` : tests,
+Les éditions 1 et 2 sont disponibles dans l’historique et RDSA 3 est ouverte
+aux réservations ; les contenus et visuels restent modifiables dans l’administration. Le workflow GitHub Actions prépare le déploiement continu sur `main` : tests,
 compilation, sauvegarde puis mise à jour du serveur. La clé dédiée
 `ALWAYSDATA_SSH_KEY` est configurée et un premier déploiement complet a réussi.
 

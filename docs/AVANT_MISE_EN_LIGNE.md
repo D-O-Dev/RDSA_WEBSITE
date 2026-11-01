@@ -20,8 +20,11 @@ local privé `storage/app/rdsa/private/admin-access-alwaysdata.txt` (droits 600)
 Le fichier `admin-access.txt` concerne l’installation locale et son mot de passe
 est différent. Aucun de ces fichiers ne doit être ajouté à Git ou à l’archive.
 
-La nouvelle base ne contient aucune édition ni réservation. L’inscription des
-participants reste donc fermée jusqu’à la préparation d’une édition active.
+Après l’installation neuve, les éditions réelles ont été renseignées depuis
+l’administration sur confirmation du propriétaire. RDSA 3 est ouverte pour le
+13 février 2027 à 8 h, à Yopougon Micao. Les éditions 1 et 2 sont publiées comme
+historique, avec inscriptions fermées, pour permettre leur sélection dans le
+formulaire. Aucune réservation de test n’a été envoyée pendant cette configuration.
 Les données conservées dans l’installation locale n’ont pas été effacées.
 
 ## Première configuration dans l’admin
@@ -227,3 +230,17 @@ Les fichiers temporaires d’installation et l’archive transférée ont été 
 du serveur. Le `.env` actif, le stockage de l’application et le rapport privé
 d’installation sont conservés. Le nouveau mot de passe administrateur est
 accessible dans le fichier privé local indiqué plus haut.
+
+## Bouton Continuer et ouverture des réservations
+
+Une édition doit être **publiée, ouverte et non archivée** pour que les visiteurs
+puissent réserver. Le tableau de bord signale l’absence d’édition ouverte et
+renvoie vers Éditions. Sans édition ouverte, le formulaire public affiche un
+message de fermeture et désactive la saisie ; il ne doit pas accepter une
+réservation sans événement.
+
+Après avoir ouvert l’édition, recharger la page publique déjà affichée pour
+récupérer ses informations et un formulaire à jour. Renseigner le nom, le numéro
+et le choix de première participation. En choisissant une participation antérieure,
+sélectionner au moins une édition historique, puis Continuer affiche le
+récapitulatif. La réservation n’est envoyée qu’après sa confirmation explicite.

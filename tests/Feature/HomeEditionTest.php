@@ -35,13 +35,19 @@ class HomeEditionTest extends TestCase
         $title = (new \DOMXPath($html))->query('//section[@id="accueil"]//div[@class="rdsa-edition-title"]')->item(0)->textContent;
         $this->assertStringContainsString('RDSA prochaine rencontre', $title);
         $this->assertStringNotContainsString('Un thème', $title);
-        $response->assertSee('2027-03-20T09:30:00+00:00');
+        $response->assertSee('2027-03-20T09:30:00+00:00')->assertDontSee('Les réservations ne sont pas encore ouvertes');
+        $this->assertSame(0, (new \DOMXPath($html))->query('//button[contains(@class, "participation-next") and @type="button" and @disabled]')->length);
     }
 
     public function test_home_without_edition_uses_placeholders_and_existing_images(): void
     {
         $this->get('/')->assertOk()->assertSee('Date à confirmer')
             ->assertSee('Lieu à confirmer')->assertSee('Thème à confirmer')
-            ->assertSee('images/gallery/rdsa2/rdsa2-img-h46.png');
+            ->assertSee('images/gallery/rdsa2/rdsa2-img-h46.png')
+            ->assertSee('Les réservations ne sont pas encore ouvertes');
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($this->get('/')->getContent());
+        $xpath = new \DOMXPath($dom);
+        $this->assertSame(1, $xpath->query('//button[contains(@class, "participation-next") and @type="button" and @disabled]')->length);
     }
 }

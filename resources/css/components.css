@@ -13,3 +13,5 @@ a[href],a[href]:hover,a[href]:focus,a[href]:active{text-decoration:none}
 /* The hero keeps its background photo; the two overlaid photos are removed. */
 .rdsa-hero .rdsa-hero-countdown-only{display:flex;align-items:center;justify-content:center;min-height:240px;margin-top:0}.rdsa-hero-countdown-only .rdsa-countdown{position:relative;right:auto;bottom:auto;width:min(100%,420px);margin:0}
 @media(max-width:991px){.rdsa-hero .rdsa-hero-countdown-only{min-height:0;margin-top:32px}.rdsa-hero-countdown-only .rdsa-countdown{width:min(100%,420px)}}
+
+.reservation-closed{display:flex;align-items:flex-start;gap:14px;padding:20px;margin-bottom:24px;border:1px solid rgba(214,181,104,.45);border-radius:20px;background:rgba(214,181,104,.08);color:inherit}.reservation-closed>i{font-size:24px;color:#d6b568;flex-shrink:0}.reservation-closed strong{display:block;font-size:17px;line-height:1.5}.reservation-closed p{font-size:14px;line-height:1.7;margin:7px 0 0}.participation-next:disabled{opacity:.55;cursor:not-allowed}.history-option:disabled{opacity:.55;cursor:default}
