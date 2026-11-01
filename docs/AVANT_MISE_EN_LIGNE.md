@@ -93,6 +93,15 @@ créer **ALWAYSDATA_SSH_KEY** avec le contenu du fichier local privé
 clé est dédiée à GitHub Actions ; sa partie publique est déjà autorisée sur le
 serveur avec les redirections et le terminal interactif désactivés.
 
+Si GitHub indique `error in libcrypto`, la valeur du secret n’est pas une clé
+privée OpenSSH lisible. Ouvrir le fichier dédié dans l’éditeur, sélectionner
+tout son contenu, et remplacer la valeur du secret avec les lignes
+`-----BEGIN OPENSSH PRIVATE KEY-----` et `-----END OPENSSH PRIVATE KEY-----`,
+ainsi que toutes les lignes intermédiaires. Ne pas coller un chemin de fichier.
+Le workflow vérifie ce format avant toute connexion et normalise les fins de
+ligne Windows. Après correction du secret, relancer un workflow : les secrets
+de dépôt d’un run déjà démarré peuvent conserver leur ancienne valeur.
+
 Ne pas utiliser le jeton API alwaysdata, la clé APP_KEY, un mot de passe SQL ou
 la clé SSH personnelle pour ce secret. Le secret est géré par GitHub et ne doit
 jamais être commité. Le workflow ne sera fonctionnel qu’une fois ce secret ajouté
