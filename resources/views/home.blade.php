@@ -30,47 +30,15 @@
 
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
 
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#accueil">
-                            Accueil
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#rdsa">
-                            La RDSA
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#editions">
-                            Éditions
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#medias">
-                            Médias
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#participer">
-                            Participer
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#contact">
-                            Contact
-                        </a>
-                    </li>
-
+                    <li class="nav-item"><a class="nav-link active" href="#accueil">Accueil</a></li>
+                    @foreach(explode(',', $siteContent['section_order']) as $section)
+                    @if($siteContent['show_' . $section] ?? true)<li class="nav-item"><a class="nav-link" href="#{{ $section }}">{{ $siteContent['nav_' . $section] }}</a></li>@endif
+                    @endforeach
                 </ul>
 
-                <a href="#participer" class="btn rdsa-navbar-button">
+                @if($siteContent['show_participer'])<a href="#participer" class="btn rdsa-navbar-button">
                     Je participe
-                </a>
+                </a>@endif
 
             </div>
 
@@ -244,154 +212,11 @@
     @endif
 
     {{-- LA RDSA --}}
-    <section id="rdsa" class="rdsa-about">
-
-        <div class="container">
-            <div class="row align-items-center g-5">
-
-                {{-- Présentation --}}
-                <div class="col-lg-4">
-
-                    <div class="rdsa-about-intro">
-
-                        <span class="section-kicker">
-                            {{ $siteContent['about_kicker'] }}
-                        </span>
-
-                        <h2>
-                            @php($heading = \App\Models\SiteContent::heading($siteContent['about_heading']))
-                            {{ $heading[0] }} <span>{{ $heading[1] }}</span>
-                        </h2>
-
-                        <div class="section-line"></div>
-
-                        <p>
-                            {{ $siteContent['about_description'] }}
-                        </p>
-
-                        <a href="#participer" class="rdsa-outline-button">
-                            {{ $siteContent['about_button'] }}
-                        <i class="bi bi-arrow-right"></i>
-                        </a>
-
-                    </div>
-
-                </div>
-
-
-                {{-- Les 4 axes --}}
-                <div class="col-lg-8">
-
-                    <div class="row g-0 rdsa-values">
-
-                        {{-- 1 --}}
-                        <div class="col-md-6 col-xl-3">
-
-                            <article class="rdsa-value">
-
-                                <div class="rdsa-value-icon">
-                                    <i class="bi bi-people"></i>
-                                </div>
-
-                                <h3>
-                            {{ $siteContent['value_1_title'] }}
-                        </h3>
-
-                                <p>
-                                    {!! nl2br(e($siteContent['value_1_text'])) !!}
-                                </p>
-
-                            </article>
-
-                        </div>
-
-
-                        {{-- 2 --}}
-                        <div class="col-md-6 col-xl-3">
-
-                            <article class="rdsa-value">
-
-                                <div class="rdsa-value-icon">
-                                    <i class="bi bi-fire"></i>
-                                </div>
-
-                                <h3>
-                            {{ $siteContent['value_2_title'] }}
-                        </h3>
-
-                                <p>
-                                    {!! nl2br(e($siteContent['value_2_text'])) !!}
-                                </p>
-
-                            </article>
-
-                        </div>
-
-
-                        {{-- 3 --}}
-                        <div class="col-md-6 col-xl-3">
-
-                            <article class="rdsa-value">
-
-                                <div class="rdsa-value-icon">
-                                    <i class="bi bi-book"></i>
-                                </div>
-
-                                <h3>
-                            {{ $siteContent['value_3_title'] }}
-                        </h3>
-
-                                <p>
-                                    {!! nl2br(e($siteContent['value_3_text'])) !!}
-                                </p>
-
-                            </article>
-
-                        </div>
-
-
-                        {{-- 4 --}}
-                        <div class="col-md-6 col-xl-3">
-
-                            <article class="rdsa-value">
-
-                                <div class="rdsa-value-icon">
-                                    <i class="bi bi-heart"></i>
-                                </div>
-
-                                <h3>
-                            {{ $siteContent['value_4_title'] }}
-                        </h3>
-
-                                <p>
-                                    {!! nl2br(e($siteContent['value_4_text'])) !!}
-                                </p>
-
-                            </article>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-    </section>
-
-
-<section id="editions" class="rdsa-editions"><div class="container"><div class="section-heading"><span class="section-kicker">{{ $siteContent['editions_kicker'] }}</span><h2>@php($heading = \App\Models\SiteContent::heading($siteContent['editions_heading']))
-                            {{ $heading[0] }} <span>{{ $heading[1] }}</span></h2><div class="section-heading-line"></div></div><div class="row g-4">
-@foreach(collect([$edition])->filter()->merge($previousEditions)->sortBy('number') as $past)
-@php($cover = $past->hero_background_path ?: ([1 => 'images/gallery/rdsa1/rdsa1-flyer.jpg', 2 => 'images/gallery/rdsa2/rdsa2-flyer.jpg', 3 => 'images/gallery/rdsa3/rdsa3-flyer.jpeg'][$past->number] ?? 'images/gallery/rdsa2/rdsa2-img-h42.jpeg'))
-<div class="col-md-6 col-lg-4"><article class="edition-card {{ $past->is_active ? 'edition-current' : '' }}"><div class="edition-image"><img src="{{ asset($cover) }}" alt="{{ $past->name }}" loading="lazy"><span class="edition-number">ÉDITION {{ $past->number }}</span>@if($past->is_active)<span class="edition-current-badge">ÉDITION ACTUELLE</span>@endif</div><div class="edition-content"><div><span class="edition-name">{{ $past->name }}</span><span class="edition-date">{{ $past->starts_at->locale('fr')->translatedFormat('d F Y') }}</span></div><a class="edition-link" href="{{ $past->is_active ? '#accueil' : '#medias' }}" @if(!$past->is_active) data-album-open="{{ $past->name }}" @endif>{{ $past->is_active ? 'DÉCOUVRIR' : 'VOIR PLUS' }} <i class="bi bi-arrow-right"></i></a></div></article></div>
+    @foreach(explode(',', $siteContent['section_order']) as $section)
+@if($siteContent['show_' . $section] ?? true)
+@include(['rdsa' => 'sections.about', 'editions' => 'sections.editions', 'medias' => 'media.section', 'participer' => 'participations.form', 'contact' => 'contact.section'][$section])
+@endif
 @endforeach
-</div></div></section>
-
-@include('media.section')
-@include('participations.form')
-@include('contact.section')
 
 </main>
     <footer class="rdsa-footer">
@@ -433,29 +258,29 @@
                             </a>
                         </li>
 
-                        <li>
+                        @if($siteContent['show_rdsa'])<li>
                             <a href="#rdsa">
                                 La RDSA
                             </a>
-                        </li>
+                        </li>@endif
 
-                        <li>
+                        @if($siteContent['show_editions'])<li>
                             <a href="#editions">
                                 Éditions
                             </a>
-                        </li>
+                        </li>@endif
 
-                        <li>
+                        @if($siteContent['show_medias'])<li>
                             <a href="#medias">
                                 Médias
                             </a>
-                        </li>
+                        </li>@endif
 
-                        <li>
+                        @if($siteContent['show_contact'])<li>
                             <a href="#contact">
                                 Contact
                             </a>
-                        </li>
+                        </li>@endif
 
                     </ul>
 
@@ -469,7 +294,8 @@
                         ÉDITIONS
                     </h3>
 
-<ul class="footer-links">@foreach(collect([$edition])->filter()->merge($previousEditions)->sortBy('number') as $item)<li><a href="#editions">{{ $item->name }}</a></li>@endforeach</ul>
+<ul class="footer-links">@foreach(collect([$edition])->filter()->merge($previousEditions)->sortBy('number') as $item)@if($siteContent['show_editions'])<li><a href="#editions">{{ $item->name }}</a></li>@endif
+@endforeach</ul>
 
                 </div>
 
@@ -491,14 +317,14 @@
                             {{ $siteContent['footer_invitation'] }}
                         </p>
 
-                        <a href="#participer"
+                        @if($siteContent['show_participer'])<a href="#participer"
                             class="footer-button">
 
                             {{ $siteContent['footer_button'] }}
 
                             <i class="bi bi-arrow-right"></i>
 
-                        </a>
+                        </a>@endif
 
                     </div>
 

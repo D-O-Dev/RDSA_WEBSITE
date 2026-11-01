@@ -30,7 +30,7 @@
                     <span class="bd {{ $item->is_active ? 'in2' : 'mu' }}">{{ $item->is_active ? 'Ouverte' : 'Fermée' }}</span>
                 </td>
                 <td>{{ $item->participations_count }}</td>
-                <td><a class="btn sm" href="{{ route('admin.index', ['edit' => $item->id]) }}"><i class="bi bi-pencil"></i>Modifier</a></td>
+                <td><div class="act"><a class="btn sm" href="{{ route('admin.index', ['edit' => $item->id]) }}"><i class="bi bi-pencil"></i>Modifier</a><form method="POST" enctype="multipart/form-data" action="{{ route('admin.editions.duplicate', $item) }}">@csrf<button class="btn sm" type="submit">Dupliquer</button></form></div></td>
             </tr>
             @empty
             <tr>
@@ -48,7 +48,7 @@
 @if($editing)
 <div class="ov on" id="ov">
     <div class="md" role="dialog" aria-modal="true" aria-labelledby="edition-title">
-        <form method="POST" action="{{ $editing->exists ? route('admin.editions.update', $editing) : route('admin.editions.store') }}">
+        <form method="POST" enctype="multipart/form-data" action="{{ $editing->exists ? route('admin.editions.update', $editing) : route('admin.editions.store') }}">
             @csrf
             @if($editing->exists) @method('PUT') @endif
             <div class="media-editor-heading"><h3 id="edition-title">{{ $editing->exists ? 'Modifier l’édition' : 'Nouvelle édition' }}</h3><a class="btn media-editor-close" href="{{ route('admin.index') }}" aria-label="Fermer le formulaire édition"><i class="bi bi-x-lg" aria-hidden="true"></i></a></div>
@@ -62,6 +62,7 @@
                 <div class="f"><label for="edition-name">Nom de l’édition</label><input class="in" id="edition-name" name="name" value="{{ old('name', $editing->name) }}" maxlength="100" required autofocus></div>
                 <div class="f"><label for="edition-number">Numéro</label><input class="in" id="edition-number" type="number" name="number" value="{{ old('number', $editing->number) }}" min="1" max="65535" required></div>
             </div>
+            <fieldset class="card"><legend>Organisation des réservations</legend><p class="hint">Laisse vide pour garder une ouverture manuelle et aucune limite de places. Les dates utilisent l’heure du site.</p><div class="row2">@foreach(['reservations_open_at' => 'Ouvrir les réservations le', 'reservations_close_at' => 'Fermer les réservations le'] as $field => $label)<div class="f"><label for="{{ $field }}">{{ $label }}</label><input class="in" id="{{ $field }}" name="{{ $field }}" type="datetime-local" value="{{ old($field, $editing->$field?->format('Y-m-d\TH:i')) }}"></div>@endforeach</div><div class="f"><label for="edition-capacity">Nombre maximal de personnes</label><input class="in" id="edition-capacity" name="capacity" type="number" min="1" max="1000000" value="{{ old('capacity', $editing->capacity) }}"></div></fieldset>
             <div class="f"><label for="edition-theme">Thème du programme</label><input class="in" id="edition-theme" name="theme" value="{{ old('theme', $editing->theme) }}" maxlength="255" required></div>
             <div class="row2">
                 <div class="f"><label for="edition-date">Date et heure</label><input class="in" id="edition-date" type="datetime-local" name="starts_at" value="{{ old('starts_at', $editing->starts_at?->format('Y-m-d\TH:i')) }}" required></div>
@@ -89,6 +90,8 @@
             @endforeach
             <div class="act"><a class="btn" href="{{ route('admin.index') }}">Annuler</a><button class="btn pri" type="submit">Enregistrer</button></div>
         </form>
+        @if($editing->exists) @can('manage-sensitive-data')<details class="update-delete"><summary>Supprimer ce brouillon</summary><p class="hint">Possible uniquement pour un brouillon sans réservation ni contenu associé.</p><form method="POST" enctype="multipart/form-data" action="{{ route('admin.editions.destroy', $editing) }}">@csrf @method('DELETE')<div class="f"><label>Recopie {{ $editing->name }}<input class="in" name="confirmation_name" required></label></div><div class="f"><label>Ton mot de passe<input class="in" name="current_password" type="password" autocomplete="current-password" required></label></div><button class="btn bad" type="submit">Supprimer le brouillon</button></form></details>@endcan @endif
+
     </div>
 </div>
 @endif

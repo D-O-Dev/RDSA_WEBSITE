@@ -1,5 +1,5 @@
 @php
-$guideTopics = collect(config('admin_guide'))->filter(fn($topic) => ($topic['audience'] ?? 'admin') === 'all' || (($topic['audience'] ?? 'admin') === 'admin' ? auth()->user()->is_admin : !auth()->user()->is_admin));
+$guideTopics = collect(config('admin_guide'))->filter(fn($topic) => ($topic['audience'] ?? 'admin') === 'all' || (($topic['audience'] ?? 'admin') === 'super' ? auth()->user()->can('manage-sensitive-data') : (($topic['audience'] ?? 'admin') === 'admin' ? auth()->user()->is_admin : !auth()->user()->is_admin)));
 @endphp
 <dialog class="admin-commands admin-guide" id="rdsa-admin-guide" aria-labelledby="admin-guide-title" data-guide-user="{{ auth()->id() }}">
     <div class="command-heading"><div><span class="guide-kicker">Un coup de main, à chaque étape</span><h2 id="admin-guide-title">Guide de l’administration</h2></div><button class="ib" type="button" data-dialog-close aria-label="Fermer le guide"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>

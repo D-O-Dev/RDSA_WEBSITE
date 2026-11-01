@@ -14,10 +14,11 @@ class ContactMessageController extends Controller
     {
         $filters = $request->validate(['q' => ['nullable', 'string', 'max:150'], 'status' => ['nullable', Rule::in(['new', 'read', 'done', 'archived'])]]);
         $messages = ContactMessage::query()->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))
-            ->when($filters['q'] ?? null, fn ($q, $search) => $q->where(fn ($m) => $m->where('name', 'like', '%' . $search . '%')
-                ->orWhere('subject', 'like', '%' . $search . '%')->orWhere('reference', 'like', '%' . $search . '%')
-                ->orWhere('email', 'like', '%' . $search . '%')->orWhere('phone', 'like', '%' . $search . '%')))
+            ->when($filters['q'] ?? null, fn ($q, $search) => $q->where(fn ($m) => $m->where('name', 'like', '%'.$search.'%')
+                ->orWhere('subject', 'like', '%'.$search.'%')->orWhere('reference', 'like', '%'.$search.'%')
+                ->orWhere('email', 'like', '%'.$search.'%')->orWhere('phone', 'like', '%'.$search.'%')))
             ->orderByDesc('updated_at')->orderByDesc('id')->paginate(20)->withQueryString();
+
         return response()->view('admin.messages.index', compact('messages'))->header('Cache-Control', 'private, no-store');
     }
 
@@ -25,10 +26,13 @@ class ContactMessageController extends Controller
     {
         ContactMessage::whereKey($message->id)->where('status', 'new')->update(['status' => 'read']);
         $message->refresh()->load('replies');
-        if ($request->expectsJson()) return response()->json([
-            'html' => view('messages.thread', compact('message'))->render(),
-            'version' => $message->status . ':' . ($message->replies->last()?->id ?? 0),
-        ])->header('Cache-Control', 'private, no-store');
+        if ($request->expectsJson()) {
+            return response()->json([
+                'html' => view('messages.thread', compact('message'))->render(),
+                'version' => $message->status.':'.($message->replies->last()?->id ?? 0),
+            ])->header('Cache-Control', 'private, no-store');
+        }
+
         return response()->view('admin.messages.show', compact('message'))->header('Cache-Control', 'private, no-store');
     }
 
@@ -40,14 +44,28 @@ class ContactMessageController extends Controller
             $message->replies()->create(['body' => $data['body'], 'author_type' => 'admin', 'user_id' => $request->user()->id]);
             $message->update(['status' => 'done']);
         });
-        if ($request->expectsJson()) return response()->json(['message' => 'Réponse publiée dans la conversation privée.']);
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Réponse publiée dans la conversation privée.']);
+        }
+
         return redirect()->route('admin.messages.show', $message)->with('status', 'Réponse publiée.');
     }
 
-    public function archive(ContactMessage $message)
+    public function archive(Request $request, ContactMessage $message)
     {
-        $message->update(['status' => 'archived']);
-        return redirect()->route('admin.messages.index')->with('status', 'Conversation archivée.');
+        $data = $request->validate(['status' => ['sometimes', Rule::in(['archived', 'read'])]]);
+        $message->update(['status' => $data['status'] ?? 'archived']);
+
+        return redirect()->route('admin.messages.index')->with('status', $message->status === 'archived' ? 'Conversation archivée.' : 'Conversation remise dans la boîte de réception.');
+    }
+
+    public function destroy(Request $request, ContactMessage $message)
+    {
+        abort_unless($request->user()->can('manage-sensitive-data'), 403);
+        $request->validate(['current_password' => ['required', 'current_password:web'], 'confirmation_reference' => ['required', Rule::in([$message->reference])]]);
+        $message->delete();
+
+        return redirect()->route('admin.messages.index')->with('status', 'Conversation et réponses supprimées définitivement.');
     }
 
     public function count()

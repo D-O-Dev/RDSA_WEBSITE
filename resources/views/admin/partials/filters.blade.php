@@ -8,5 +8,6 @@
 </select>
 <button class="btn pri" type="submit"><i class="bi bi-search"></i>Filtrer</button>
 <a class="btn" href="{{ url()->current() }}">Réinitialiser</a>
+<a class="btn" download href="{{ route('admin.exports', ['kind' => request()->routeIs('admin.tickets.index') ? 'tickets' : 'participations'] + request()->only(['q', 'status', 'edition'])) }}"><i class="bi bi-download" aria-hidden="true"></i>Exporter CSV</a>
 </form>
 @if($errors->any())<div class="lock" role="alert">{{ $errors->first() }}</div>@endif

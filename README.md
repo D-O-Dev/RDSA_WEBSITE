@@ -117,8 +117,71 @@ racine web Laravel. Le code en production est celui de cette application.
 Consulter [la procédure de préparation](docs/AVANT_MISE_EN_LIGNE.md).
 Les points externes restent à vérifier : vrais liens et images, recette du design
 sur les deux interfaces, caméra/clavier sur téléphone réel, hébergement gratuit
-compatible PHP 8.3, HTTPS, persistance des fichiers et restauration d’une sauvegarde.
+compatible PHP 8.4.1 minimum, HTTPS, persistance des fichiers et restauration d’une sauvegarde.
 L’envoi automatique WhatsApp nécessite ses accès réels et un test de livraison.
 
 `php artisan rdsa:check-deployment` vérifie la configuration sans modifier les
 données. Aucun hébergement ni domaine n’est configuré automatiquement.
+
+## Gestion V2
+
+La V2 complète l’administration existante sans remplacer Laravel, Blade ou le design.
+Le premier administrateur actif devient Super ADMIN lors de la migration ; les
+créations ultérieures de comptes restent soumises aux permissions du propriétaire.
+
+- **Réservations → Gérer / corriger** : corriger les coordonnées, réexaminer une
+  demande refusée/annulée, remplacer un billet compromis, annuler une entrée
+  erronée ou supprimer entièrement un test, présence comprise. Les actions
+  exceptionnelles exigent le rôle Super ADMIN, la référence, le mot de passe et
+  un motif inscrit au journal. Aucun test réel n’est supprimé automatiquement. Changer le téléphone révoque les anciens liens privés et remplace les billets encore utilisables.
+- Listes filtrées par défaut sur l’édition active ; « Toutes les éditions » reste
+  disponible. Exports CSV nominatifs filtrés et traités par lots de 250 lignes ;
+  aucun jeton de billet n’est exporté. Sélection et actions groupées sur les
+  réservations et médias, limitées à 100 éléments explicitement confirmés.
+- Éditions duplicables en brouillon ; suppression d’un brouillon uniquement s’il
+  n’a aucune donnée associée. Dates d’ouverture/fermeture et capacité facultatives.
+  Les contrôles sont effectués côté serveur, sous verrou lors de l’inscription.
+- Corbeille pour les médias, annonces/FAQ et rendez-vous ; restauration masquée,
+  puis publication explicite. Conversations désarchivables/supprimables et
+  suppression protégée des comptes désactivés hors Super ADMIN.
+- Ajout groupé de photos, images de marque téléversables, nettoyage des images
+  inutilisées de plus de 24 heures. La corbeille protège les fichiers référencés.
+  La galerie publique ne charge que 60 médias par page.
+- Rubriques publiques masquables, ordre et libellés du menu modifiables,
+  coordonnées permanentes, titre/description de recherche et logo PDF dédiés.
+  Les images externes ne sont pas téléchargées par le serveur ; pour le PDF,
+  utiliser une image locale/téléversée, en JPG si GD n’est pas disponible.
+- **Mon compte** : double authentification TOTP facultative et codes de secours
+  à usage unique, en complément du mot de passe. Les secrets sont chiffrés et
+  les codes déjà utilisés sont refusés. Implémentation vérifiée avec les vecteurs
+  de la [RFC 6238](https://www.rfc-editor.org/rfc/rfc6238).
+- **Envoi des e-mails** : accès SMTP chiffrés, réservés au Super ADMIN, pour le
+  parcours « Mot de passe oublié ». Un véritable service d’envoi est nécessaire ;
+  aucun fournisseur n’est activé automatiquement.
+- Notifications Web Push facultatives via la bibliothèque PHP
+  [minishlink/web-push](https://github.com/web-push-libs/web-push-php). Un clic et
+  l’autorisation du navigateur sont nécessaires sur chaque appareil. Les alertes
+  admin n’incluent pas les coordonnées des participants. Le service worker ne
+  met aucune page privée en cache. La réception dépend du navigateur et du système.
+- Suivi central WhatsApp et résolution manuelle des envois incertains. Une
+  résolution ne renvoie aucun message ; la relance est une action distincte.
+- **Sauvegardes et maintenance** : archives privées chiffrées pour les données
+  métier et jusqu’à 100 Mo d’images téléversées, téléchargement/import, restauration
+  avec sauvegarde préalable et maintenance publique laissant l’admin accessible.
+  Les comptes, clés d’hébergement, code, journal et paramètres d’infrastructure
+  ne sont pas remplacés. Les envois WhatsApp restaurés qui pourraient avoir déjà
+  été exécutés sont bloqués pour vérification manuelle.
+
+### Automatisations
+
+Le planificateur Laravel doit tourner chaque minute sur l’hébergement :
+
+```sh
+cd /home/rdsa/rdsa && php artisan schedule:run --no-interaction
+```
+
+Il traite les commandes `rdsa:deliver-tickets`, `rdsa:deliver-push` et
+`rdsa:backup-site`. La sauvegarde quotidienne reste désactivée jusqu’au choix
+explicite de son horaire dans l’admin ; les trois dernières archives automatiques
+sont conservées. L’écran affiche le dernier passage du planificateur.
+Les archives manuelles restent conservées jusqu’à suppression explicite.

@@ -2,6 +2,7 @@
 @section('admin-title', 'Billet individuel')
 @section('admin-content')
 <div class="bar"><a class="btn" href="{{ route('admin.tickets.index') }}"><i class="bi bi-arrow-left"></i>Billets</a></div>
+<div class="bar"><a class="btn" href="{{ route('admin.participations.manage', $ticket->participation) }}">Gérer la réservation / corriger un test</a></div>
 @if(session('status'))<div class="lock" role="status">{{ session('status') }}</div>@endif
 <section class="card ticket-details">
 <h3><i class="bi bi-ticket-perforated"></i>{{ $ticket->reference }}</h3>

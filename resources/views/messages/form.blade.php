@@ -7,6 +7,7 @@
 @if($faqs->isNotEmpty())
 <details class="questions-faq"><summary><span><i class="bi bi-question-circle" aria-hidden="true"></i>Questions fréquentes</span><span>{{ $faqs->count() }} {{ $faqs->count() === 1 ? 'réponse' : 'réponses' }} <i class="bi bi-chevron-down" aria-hidden="true"></i></span></summary><div class="questions-faq-list">@foreach($faqs as $faq)<details class="questions-faq-item"><summary>{{ $faq->title }}<i class="bi bi-plus-lg" aria-hidden="true"></i></summary><p>{{ $faq->body }}</p></details>@endforeach</div></details>
 @endif
+@include('partials.push-toggle', ['pushScope' => 'public'])
 <p class="questions-dialog-intro">Écris-nous. Après l’envoi, conserve ton lien privé pour retrouver nos réponses.</p>
 <form class="questions-form" data-contact-form method="POST" action="{{ route('messages.store') }}">
 @csrf<input type="hidden" name="submission_token" value="{{ $contactSubmissionToken }}">

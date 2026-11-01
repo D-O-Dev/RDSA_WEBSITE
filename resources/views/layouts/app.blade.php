@@ -4,13 +4,16 @@
 <head>
     
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <meta name="description" 
-        content="RDSA - Réunion des Assoiffés de Prière & d'Adoration">
+        content="{{ $siteContent['seo_description'] ?? \App\Models\SiteContent::current()['seo_description'] }}">
     
-    <title>@yield('title', 'RDSA')</title>
+    <title>{{ $siteContent['seo_title'] ?? \App\Models\SiteContent::current()['seo_title'] }}</title>
+    <meta name="author" content="{{ $siteContent['site_author'] ?? \App\Models\SiteContent::current()['site_author'] }}">
+    <link rel="canonical" href="{{ route('home') }}">
     
     @if($designPreview ?? false)<script>
     document.addEventListener('submit', function(e){e.preventDefault();e.stopImmediatePropagation()}, true);

@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Cache;
 
 class Kernel extends ConsoleKernel
 {
@@ -13,6 +14,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('rdsa:deliver-tickets')->everyMinute()->withoutOverlapping();
+        $schedule->command('rdsa:backup-site')->everyMinute()->withoutOverlapping();
+        $schedule->command('rdsa:deliver-push')->everyMinute()->withoutOverlapping();
+        $schedule->call(fn () => Cache::put('rdsa.scheduler.last_run', now()->timestamp, 86400))->everyMinute();
         // $schedule->command('inspire')->hourly();
     }
 

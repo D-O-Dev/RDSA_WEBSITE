@@ -11,12 +11,14 @@ use Illuminate\Validation\Rules\Password;
 class CreateAdmin extends Command
 {
     protected $signature = 'rdsa:create-admin';
+
     protected $description = 'Créer le premier compte administrateur RDSA';
 
     public function handle(): int
     {
         if (User::where('is_admin', true)->exists()) {
             $this->error('Un administrateur existe déjà.');
+
             return self::FAILURE;
         }
         $data = [
@@ -30,13 +32,18 @@ class CreateAdmin extends Command
             'password' => ['required', 'string', Password::min(12)->mixedCase()->numbers()->symbols()],
         ]);
         if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $message) $this->error($message);
+            foreach ($validator->errors()->all() as $message) {
+                $this->error($message);
+            }
+
             return self::FAILURE;
         }
         $user = new User($data);
         $user->is_admin = true;
+        $user->is_super_admin = true;
         $user->save();
         $this->info('Administrateur créé. Connexion : /admin/login');
+
         return self::SUCCESS;
     }
 }

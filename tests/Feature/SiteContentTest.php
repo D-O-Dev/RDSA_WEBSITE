@@ -20,6 +20,7 @@ class SiteContentTest extends TestCase
     {
         $user = User::factory()->create();
         $user->forceFill(['is_admin' => true])->save();
+
         return $user;
     }
 
@@ -97,15 +98,18 @@ class SiteContentTest extends TestCase
     public function test_two_hero_photos_are_removed_but_background_and_countdown_remain(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
-        $doc = new \DOMDocument(); @$doc->loadHTML($html); $xpath = new \DOMXPath($doc);
+        $doc = new \DOMDocument;
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
         $this->assertSame(0, $xpath->query('//*[contains(concat(" ",normalize-space(@class)," ")," hero-photo ")]')->length);
         $this->assertSame(1, $xpath->query('//*[contains(@class,"rdsa-hero-background")]/img')->length);
         $this->assertSame(1, $xpath->query('//*[@data-starts-at]')->length);
         $html = $this->actingAs($this->admin())->get('/admin/content')->assertOk()->getContent();
-        @$doc->loadHTML($html); $xpath = new \DOMXPath($doc);
-        $this->assertSame(8, $xpath->query('//details[contains(@class,"content-section")]')->length);
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $this->assertSame(count(config('site_content')), $xpath->query('//details[contains(@class,"content-section")]')->length);
         $this->assertSame(1, $xpath->query('//input[@name="about_heading"]')->length);
         $this->assertSame(0, $xpath->query('//input[@name="about_title_accent" or @name="hero_wide_path" or @name="hero_portrait_path"]')->length);
-        $this->assertSame(0, $xpath->query('//form[@id="site-content-form"]//select')->length);
+        $this->assertSame(5, $xpath->query('//form[@id="site-content-form"]//select[starts-with(@name,"section_positions[")]')->length);
     }
 }

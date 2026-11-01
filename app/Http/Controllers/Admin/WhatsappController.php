@@ -9,13 +9,35 @@ use App\Models\WhatsappSetting;
 use App\Services\WhatsappTicketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class WhatsappController extends Controller
 {
-    public function edit()
+    public function edit(Request $request)
     {
-        return response()->view('admin.whatsapp', ['settings' => WhatsappSetting::current()])->header('Cache-Control', 'private, no-store');
+        $filters = $request->validate(['status' => ['nullable', Rule::in(['pending', 'processing', 'accepted', 'delivered', 'read', 'failed', 'uncertain', 'cancelled'])]]);
+
+        return response()->view('admin.whatsapp', ['settings' => WhatsappSetting::current(), 'deliveries' => WhatsappDelivery::with('ticket.participation.participant')
+            ->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))->latest('id')->paginate(20)->withQueryString()])->header('Cache-Control', 'private, no-store');
+    }
+
+    public function resolve(Request $request, WhatsappDelivery $delivery)
+    {
+        abort_unless($request->user()->can('manage-sensitive-data'), 403);
+        $data = $request->validate(['current_password' => ['required', 'current_password:web'],
+            'resolution' => ['required', Rule::in(['delivered', 'failed', 'cancelled'])], 'reason' => ['required', 'string', 'min:3', 'max:1000']]);
+        DB::transaction(function () use ($delivery, $data) {
+            $record = WhatsappDelivery::whereKey($delivery->id)->lockForUpdate()->firstOrFail();
+            if (! in_array($record->status, ['uncertain', 'processing']) || ($record->status === 'processing' && (! $record->attempted_at || $record->attempted_at->greaterThan(now()->subMinutes(5))))) {
+                throw ValidationException::withMessages(['resolution' => 'Seul un envoi incertain ou interrompu depuis plus de cinq minutes peut être résolu ici.']);
+            }
+            $record->update(['status' => $data['resolution'], 'last_error' => 'Résultat vérifié manuellement par le Super ADMIN.',
+                'delivered_at' => $data['resolution'] === 'delivered' ? now() : $record->delivered_at]);
+        });
+        $request->attributes->set('admin_action_reason', $data['reason']);
+
+        return redirect()->route('admin.whatsapp.edit')->with('status', 'Résultat enregistré. Aucun message n’a été envoyé automatiquement par cette action.');
     }
 
     public function update(Request $request)
@@ -31,37 +53,42 @@ class WhatsappController extends Controller
         ]);
         $settings = WhatsappSetting::current();
         foreach (['access_token', 'app_secret'] as $secret) {
-            if (empty($data[$secret])) unset($data[$secret]);
+            if (empty($data[$secret])) {
+                unset($data[$secret]);
+            }
         }
         $settings->fill($data);
-        if ($settings->enabled && (!$settings->access_token || !$settings->app_secret || !$settings->phone_number_id
-            || !$settings->template_name || !$settings->public_base_url)) {
+        if ($settings->enabled && (! $settings->access_token || ! $settings->app_secret || ! $settings->phone_number_id
+            || ! $settings->template_name || ! $settings->public_base_url)) {
             throw ValidationException::withMessages(['enabled' => 'Renseigne les accès Meta, le modèle approuvé et l’adresse HTTPS du site avant d’activer l’envoi.']);
         }
         $host = parse_url($settings->public_base_url ?? '', PHP_URL_HOST);
-        if ($settings->enabled && (!$host || $host === 'localhost' || str_ends_with($host, '.localhost')
-            || (filter_var($host, FILTER_VALIDATE_IP) && !filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)))) {
+        if ($settings->enabled && (! $host || $host === 'localhost' || str_ends_with($host, '.localhost')
+            || (filter_var($host, FILTER_VALIDATE_IP) && ! filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)))) {
             throw ValidationException::withMessages(['public_base_url' => 'Une adresse publique HTTPS est nécessaire pour les liens envoyés aux participants.']);
         }
         $settings->save();
+
         return redirect()->route('admin.whatsapp.edit')->with('status', 'Configuration WhatsApp enregistrée.');
     }
 
     public function retry(Ticket $ticket, WhatsappTicketService $service)
     {
-        if (!WhatsappSetting::current()->enabled || !$ticket->participation->whatsapp_opt_in) {
+        if (! WhatsappSetting::current()->enabled || ! $ticket->participation->whatsapp_opt_in) {
             throw ValidationException::withMessages(['whatsapp' => 'Active WhatsApp et vérifie que le participant a demandé cet envoi.']);
         }
         $delivery = DB::transaction(function () use ($ticket) {
             $delivery = WhatsappDelivery::firstOrCreate(['ticket_id' => $ticket->id], ['status' => 'pending']);
             $delivery = WhatsappDelivery::whereKey($delivery->id)->lockForUpdate()->firstOrFail();
-            if (!in_array($delivery->status, ['pending', 'failed'])) {
+            if (! in_array($delivery->status, ['pending', 'failed'])) {
                 throw ValidationException::withMessages(['whatsapp' => 'Cet envoi est déjà traité, en cours ou incertain. Aucun doublon ne sera envoyé.']);
             }
             $delivery->update(['status' => 'pending']);
+
             return $delivery;
         });
         $service->send($delivery->id);
+
         return redirect()->route('admin.tickets.show', $ticket)->with('status', 'Tentative terminée. Consulte le statut WhatsApp ci-dessous.');
     }
 }

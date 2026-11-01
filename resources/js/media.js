@@ -2,11 +2,12 @@ import { setupDialog, reveal } from './ui';
 
 const opener = document.getElementById('media-open');
 if (opener) {
-    const items = JSON.parse(document.getElementById('media-data').textContent);
+    let items = JSON.parse(document.getElementById('media-data').textContent);
     const dialog = document.getElementById('media-dialog'), modal = setupDialog(dialog);
     const stage = document.getElementById('media-stage'), strip = document.getElementById('media-filmstrip');
     const album = document.getElementById('media-album'), source = document.getElementById('media-source');
-    let kind = 'all', current = 0, filtered = items, touch;
+    let kind = 'all', current = 0, filtered = items, touch, page = 1, pages = 1, total = items.length, pending, version = 0;
+    const galleryURL = document.getElementById('media-data').dataset.galleryUrl;
     function fitPlayer() {
         const player = stage.querySelector('iframe'); if (!player) return;
         const ratios = { portrait: 9 / 16, square: 1, landscape: 16 / 9 };
@@ -24,7 +25,7 @@ if (opener) {
         const item = filtered[current];
         document.getElementById('media-dialog-title').textContent = item.title;
         document.getElementById('media-dialog-album').textContent = item.album;
-        document.getElementById('media-position').textContent = `${current + 1} / ${filtered.length}`;
+        document.getElementById('media-position').textContent = `${(page - 1) * 60 + current + 1} / ${total}`;
         let content;
         if (item.kind === 'photo') {
             content = new Image(); content.src = item.source; content.alt = item.title;
@@ -48,7 +49,27 @@ if (opener) {
             strip.scrollTo({ top: active.offsetTop - strip.offsetTop - strip.clientHeight / 2 + active.clientHeight / 2, left: active.offsetLeft - strip.offsetLeft - strip.clientWidth / 2 + active.clientWidth / 2, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
         }
     }
-    function render() {
+    async function render(targetPage = 1, last = false) {
+        if (typeof targetPage !== 'number') targetPage = 1;
+        const requestVersion = ++version; pending?.abort(); pending = new AbortController();
+        stage.querySelector('video')?.pause();
+        if (galleryURL) {
+            document.querySelector('.rdsa-album-viewer').hidden = false;
+            document.getElementById('media-empty').hidden = true;
+            stage.textContent = 'Chargement des souvenirs…'; strip.replaceChildren(); source.hidden = true;
+            for (const id of ['media-prev', 'media-next']) document.getElementById(id).disabled = true;
+            try {
+                const url = new URL(galleryURL, location.href); url.search = new URLSearchParams({ kind, album: album.value, page: targetPage });
+                const response = await fetch(url, { signal: pending.signal, headers: { Accept: 'application/json' } });
+                if (!response.ok) throw new Error('La galerie est momentanément indisponible.');
+                const data = await response.json(); if (requestVersion !== version) return;
+                items = data.items; page = data.page; pages = data.last_page; total = data.total;
+            } catch (error) {
+                if (requestVersion !== version || error.name === 'AbortError') return;
+                stage.textContent = 'Impossible de charger la galerie. Vérifie ta connexion.';
+                const retry = document.createElement('button'); retry.type = 'button'; retry.className = 'btn'; retry.textContent = 'Réessayer'; retry.onclick = () => render(targetPage, last); stage.append(retry); return;
+            }
+        }
         filtered = items.filter(item => (kind === 'all' || item.kind === kind) && (!album.value || item.album === album.value));
         strip.replaceChildren(...filtered.map((item, index) => {
             const button = document.createElement('button'); button.type = 'button'; button.className = 'rdsa-album-thumb'; button.setAttribute('aria-label', `${index + 1}. ${item.title}`);
@@ -59,8 +80,14 @@ if (opener) {
         document.getElementById('media-empty').hidden = filtered.length > 0;
         document.querySelector('.rdsa-album-viewer').hidden = !filtered.length;
         document.getElementById('media-position').textContent = '0 / 0';
-        for (const id of ['media-prev', 'media-next']) document.getElementById(id).disabled = filtered.length < 2;
-        show(0);
+        for (const id of ['media-prev', 'media-next']) document.getElementById(id).disabled = total < 2;
+        show(last ? filtered.length - 1 : 0);
+    }
+    function step(direction) {
+        if (!filtered.length) return;
+        if (direction > 0 && current === filtered.length - 1 && pages > 1) return render(page === pages ? 1 : page + 1);
+        if (direction < 0 && current === 0 && pages > 1) return render(page === 1 ? pages : page - 1, true);
+        show(current + direction);
     }
     opener.addEventListener('click', () => { modal.open(opener); render(); });
     document.querySelectorAll('[data-album-open]').forEach(link => link.addEventListener('click', event => {
@@ -72,13 +99,13 @@ if (opener) {
         document.querySelectorAll('[data-media-kind]').forEach(other => { other.classList.toggle('is-active', other === button); other.setAttribute('aria-pressed', String(other === button)); }); render();
     }));
     album.addEventListener('change', render);
-    document.getElementById('media-prev').addEventListener('click', () => show(current - 1));
-    document.getElementById('media-next').addEventListener('click', () => show(current + 1));
-    dialog.addEventListener('close', () => { stage.querySelector('video')?.pause(); stage.replaceChildren(); });
+    document.getElementById('media-prev').addEventListener('click', () => step(-1));
+    document.getElementById('media-next').addEventListener('click', () => step(1));
+    dialog.addEventListener('close', () => { ++version; pending?.abort(); stage.querySelector('video')?.pause(); stage.replaceChildren(); });
     dialog.addEventListener('keydown', event => {
         if (['VIDEO', 'IFRAME', 'INPUT', 'SELECT'].includes(event.target.tagName)) return;
-        if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { event.preventDefault(); show(current + (event.key === 'ArrowRight' ? 1 : -1)); }
+        if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { event.preventDefault(); step(event.key === 'ArrowRight' ? 1 : -1); }
     });
     stage.addEventListener('pointerdown', event => { touch = event.pointerType === 'touch' && filtered[current]?.kind === 'photo' ? [event.clientX, event.clientY] : null; });
-    stage.addEventListener('pointerup', event => { if (!touch) return; const dx = event.clientX - touch[0], dy = event.clientY - touch[1]; touch = null; if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) show(current + (dx < 0 ? 1 : -1)); });
+    stage.addEventListener('pointerup', event => { if (!touch) return; const dx = event.clientX - touch[0], dy = event.clientY - touch[1]; touch = null; if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1); });
 }

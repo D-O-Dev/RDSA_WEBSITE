@@ -33,6 +33,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_last_window',
     ];
 
     /**
@@ -43,6 +44,8 @@ class User extends Authenticatable
     protected $casts = [
         'is_active' => 'boolean',
         'is_admin' => 'boolean',
+        'is_super_admin' => 'boolean',
+        'two_factor_secret' => 'encrypted', 'two_factor_recovery_codes' => 'encrypted:array', 'two_factor_last_window' => 'integer',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];

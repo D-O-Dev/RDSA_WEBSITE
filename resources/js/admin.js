@@ -1,3 +1,4 @@
+import './push.js';
 import './admin-guide.js';
 import './admin-account.js';
 import './admin-appearance.js';

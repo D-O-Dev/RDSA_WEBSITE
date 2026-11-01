@@ -4,6 +4,7 @@ namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -21,9 +22,10 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Gate::define('access-admin', fn ($user) => $user->is_active && ($user->is_admin || $user->team_role === 'controller'));
-        \Illuminate\Support\Facades\Gate::define('manage-team', fn ($user) => $user->is_active && $user->is_admin);
-        \Illuminate\Support\Facades\Gate::define('use-admin-route', fn ($user) => $user->is_admin || request()->routeIs('admin.check-in.*', 'admin.attendances.index', 'admin.account.*'));
+        Gate::define('access-admin', fn ($user) => $user->is_active && ($user->is_admin || $user->team_role === 'controller'));
+        Gate::define('manage-team', fn ($user) => $user->is_active && $user->is_admin);
+        Gate::define('manage-sensitive-data', fn ($user) => $user->is_active && $user->is_admin && $user->is_super_admin);
+        Gate::define('use-admin-route', fn ($user) => $user->is_admin || request()->routeIs('admin.check-in.*', 'admin.attendances.index', 'admin.account.*', 'admin.two-factor.*'));
         //
     }
 }

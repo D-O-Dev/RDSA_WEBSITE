@@ -179,7 +179,7 @@ du `.env` en ligne. Ne pas régénérer la clé lors d’une mise à jour.
 
 Les réservations sont gratuites et individuelles. La suppression définitive
 exige une réservation annulée/refusée, sa référence et le mot de passe admin ;
-une présence enregistrée bloque cette suppression.
+une présence enregistrée bloque cette suppression ordinaire. En V2, le Super ADMIN dispose d’une procédure distincte et confirmée pour les tests scannés.
 
 Le partage WhatsApp manuel est disponible. L’envoi automatique exige un compte
 fournisseur, ses identifiants, un modèle approuvé et une livraison réelle vérifiée.
@@ -188,7 +188,7 @@ minute dans alwaysdata. Aucun envoi automatique n’est configuré sur la base n
 
 La cloche admin vérifie les demandes et messages pendant que l’admin est ouvert ;
 les annonces publiques se rafraîchissent également sur une page visible.
-Ce ne sont pas des notifications système quand le navigateur est fermé.
+La V2 ajoute des notifications Web Push facultatives dans Mon compte et dans le bouton Informations et questions. Elles nécessitent l’accord du navigateur et le planificateur actif ; la réception reste dépendante du système.
 
 ## Fichiers privés et accès
 
@@ -244,3 +244,22 @@ récupérer ses informations et un formulaire à jour. Renseigner le nom, le num
 et le choix de première participation. En choisissant une participation antérieure,
 sélectionner au moins une édition historique, puis Continuer affiche le
 récapitulatif. La réservation n’est envoyée qu’après sa confirmation explicite.
+
+
+## Livraison V2
+
+Avant la mise en ligne, vérifier les nouvelles migrations, l’extension PHP ZIP,
+la compilation et la suite de tests. Les migrations sont additives et n’effacent
+ni les éditions ni les inscriptions existantes. Le premier administrateur actif
+reçoit le rôle Super ADMIN ; aucun mot de passe n’est remplacé.
+
+Après livraison : vérifier les nouvelles rubriques du guide, les exports et
+Gérer / corriger. Ne pas supprimer un billet réel pendant la recette. Les tests
+qui créent puis effacent des réservations sont réalisés sur une base QA isolée.
+Une restauration de sauvegarde est une opération explicite réservée au
+propriétaire : elle remplace les données métier par celles de l’archive.
+
+Le SMTP et WhatsApp automatique demandent de vrais accès fournisseur. Les
+notifications demandent une autorisation sur chaque appareil. La sauvegarde
+quotidienne reste à activer selon l’espace disponible. Le planificateur doit
+être vérifié après installation ; son dernier passage apparaît dans Sauvegardes.

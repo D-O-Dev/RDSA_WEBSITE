@@ -20,7 +20,7 @@ jobs:
       - uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea # v2
         with:
           php-version: '8.4'
-          extensions: mbstring, dom, fileinfo, pdo_mysql, pdo_sqlite, sqlite3
+          extensions: mbstring, dom, fileinfo, pdo_mysql, pdo_sqlite, sqlite3, zip
           coverage: none
           tools: composer:v2
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -89,7 +89,7 @@ jobs:
             echo '::error::Le secret ALWAYSDATA_SSH_KEY doit contenir toute la clé privée OpenSSH du fichier github-actions-deploy-ed25519, avec les lignes BEGIN et END, pas son chemin ni le fichier .pub.'
             exit 1
           fi
-          options=(-o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deployment/alwaysdata_known_hosts -o ConnectTimeout=20 -i "$key")
+          options=(-o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deployment/alwaysdata_known_hosts -o ConnectTimeout=30 -o ConnectionAttempts=3 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -i "$key")
           archive="$RUNNER_TEMP/release/rdsa-release.tar.gz"
           digest=$(sha256sum "$archive" | cut -d ' ' -f 1)
           if ! ssh "${options[@]}" rdsa@ssh-rdsa.alwaysdata.net 'install -d -m 700 /home/rdsa/rdsa-private/ci/incoming' 2> "$RUNNER_TEMP/rdsa-ssh-error"; then

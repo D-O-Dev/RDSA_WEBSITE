@@ -5,6 +5,8 @@
 <div class="lock" role="status">{{ session('status') }}</div>
 @endif
 @include('admin.partials.filters', ['statuses' => ['pending' => 'En attente', 'confirmed' => 'Confirmées', 'rejected' => 'Rejetées', 'cancelled' => 'Annulées']])
+<div class="bar"><a class="btn" href="{{ route('admin.participations.create') }}"><i class="bi bi-person-plus" aria-hidden="true"></i>Inscrire une personne</a></div>
+@include('admin.partials.bulk', ['bulkKind' => 'participations'])
 <div class="tw">
     <table>
         <thead>
@@ -14,7 +16,7 @@
         @forelse($participations as $participation)
             <tr>
                 <td>
-                    <b>{{ $participation->reference }}</b>
+                    <label><input type="checkbox" name="ids[]" value="{{ $participation->id }}" form="bulk-participations" aria-label="Sélectionner {{ $participation->reference }}"> <b>{{ $participation->reference }}</b></label>
                     <div class="hint">{{ $participation->created_at->format('d/m/Y H:i') }}</div>
                 </td>
                 <td>
@@ -26,6 +28,7 @@
                 <td>@include('admin.partials.status', ['status' => $participation->status])</td>
                 <td>
                     <div class="act reservation-actions">
+                    <a class="btn sm" href="{{ route('admin.participations.manage', $participation) }}"><i class="bi bi-pencil-square" aria-hidden="true"></i>Gérer / corriger</a>
                     @forelse($participation->tickets as $ticket)
                         <a class="btn sm" href="{{ route('admin.tickets.show', $ticket) }}">Voir le billet</a>
                     @empty

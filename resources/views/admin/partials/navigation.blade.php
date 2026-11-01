@@ -19,10 +19,12 @@
       <a href="{{ route('admin.content.edit') }}" class="{{ request()->routeIs('admin.content.*') ? 'on' : '' }}"><i class="bi bi-pencil-square"></i><span class="nav-label">Contenu du site</span></a>
       <a href="{{ route('admin.media.index') }}" class="{{ request()->routeIs('admin.media.*') ? 'on' : '' }}"><i class="bi bi-images"></i><span class="nav-label">Médiathèque</span></a>
       <a href="{{ route('admin.index') }}" class="{{ request()->routeIs('admin.index') ? 'on' : '' }}"><i class="bi bi-calendar-event"></i><span class="nav-label">Éditions</span></a>
+      <a href="{{ route('admin.trash.index') }}" class="{{ request()->routeIs('admin.trash.*') ? 'on' : '' }}"><i class="bi bi-trash3"></i><span class="nav-label">Corbeille</span></a>
       <h4>Équipe</h4>
       <a href="{{ route('admin.audit.index') }}" class="{{ request()->routeIs('admin.audit.*') ? 'on' : '' }}"><i class="bi bi-journal-text"></i><span class="nav-label">Journal des actions</span></a>
       <a href="{{ route('admin.team.index') }}" class="{{ request()->routeIs('admin.team.*') ? 'on' : '' }}"><i class="bi bi-people-fill"></i><span class="nav-label">Comptes et accès</span></a>
       @endcan
+      @can('manage-sensitive-data')<a href="{{ route('admin.backups.index') }}"><i class="bi bi-database-lock"></i><span class="nav-label">Sauvegardes et maintenance</span></a><a href="{{ route('admin.storage.index') }}"><i class="bi bi-hdd"></i><span class="nav-label">Fichiers inutilisés</span></a><a href="{{ route('admin.mail.edit') }}" class="{{ request()->routeIs('admin.mail.*') ? 'on' : '' }}"><i class="bi bi-envelope-gear"></i><span class="nav-label">Envoi des e-mails</span></a>@endcan
       <h4>Mon accès</h4>
       <a href="{{ route('admin.account.edit') }}" class="{{ request()->routeIs('admin.account.*') ? 'on' : '' }}"><i class="bi bi-shield-lock"></i><span class="nav-label">Mon compte</span></a>
     

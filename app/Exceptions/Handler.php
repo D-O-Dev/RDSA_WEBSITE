@@ -20,6 +20,9 @@ class Handler extends ExceptionHandler
         'access_token',
         'access_code',
         'token',
+        'two_factor_code',
+        'smtp_password',
+        'delete_token',
     ];
 
     /**

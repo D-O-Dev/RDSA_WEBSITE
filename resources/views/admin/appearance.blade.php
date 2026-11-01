@@ -8,7 +8,7 @@
 @if(!$editing)<div class="card empty">Crée d’abord une édition pour lui associer une apparence. <a class="btn" href="{{ route('admin.index', ['create' => 1]) }}">Créer une édition</a></div>
 @else
 @php($heroSettings = old('hero_settings', $editing->hero_settings ?? []))
-<form id="appearance-form" class="appearance-workspace" method="POST" action="{{ route('admin.appearance.update', $editing) }}" data-preview-url="{{ route('admin.appearance.preview', $editing) }}">@csrf @method('PUT')
+<form id="appearance-form" class="appearance-workspace" method="POST" enctype="multipart/form-data" action="{{ route('admin.appearance.update', $editing) }}" data-preview-url="{{ route('admin.appearance.preview', $editing) }}">@csrf @method('PUT')
 <div class="appearance-controls">
 @include('admin.partials.design-picker')
 <details class="appearance-options"><summary>Photographies et arrière-plan</summary>

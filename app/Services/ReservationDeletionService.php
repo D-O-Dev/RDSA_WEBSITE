@@ -12,15 +12,15 @@ use Illuminate\Validation\ValidationException;
 
 class ReservationDeletionService
 {
-    public function delete(Participation $participation): void
+    public function delete(Participation $participation, bool $includingAttendance = false): void
     {
-        DB::transaction(function () use ($participation) {
+        DB::transaction(function () use ($participation, $includingAttendance) {
             // Same order as registration; check-in also locks participation before tickets.
             Edition::whereKey($participation->edition_id)->lockForUpdate()->firstOrFail();
             $record = Participation::whereKey($participation->id)->lockForUpdate()->firstOrFail();
             $tickets = $record->tickets()->orderBy('id')->lockForUpdate()->get();
-            if (!in_array($record->status, ['cancelled', 'rejected']) || $tickets->contains('status', 'used')
-                || Attendance::whereIn('ticket_id', $tickets->modelKeys())->exists()) {
+            if (! $includingAttendance && (! in_array($record->status, ['cancelled', 'rejected']) || $tickets->contains('status', 'used')
+                || Attendance::whereIn('ticket_id', $tickets->modelKeys())->exists())) {
                 throw ValidationException::withMessages(['deletion' => 'Annule ou refuse d’abord cette réservation. Une présence enregistrée ne peut pas être effacée ici.']);
             }
             $deliveries = WhatsappDelivery::whereIn('ticket_id', $tickets->modelKeys())->lockForUpdate()->get();
@@ -31,10 +31,15 @@ class ReservationDeletionService
                 throw ValidationException::withMessages(['deletion' => 'Cette ancienne réservation possède un historique de paiement. Conserve-la annulée pour préserver cet historique.']);
             }
             WhatsappDelivery::whereIn('ticket_id', $tickets->modelKeys())->delete();
+            if ($includingAttendance) {
+                Attendance::whereIn('ticket_id', $tickets->modelKeys())->delete();
+            }
             $record->tickets()->delete();
             $person = Participant::whereKey($record->participant_id)->lockForUpdate()->firstOrFail();
             $record->delete();
-            if (!$person->participations()->exists()) $person->delete();
+            if (! $person->participations()->exists()) {
+                $person->delete();
+            }
         });
     }
 }

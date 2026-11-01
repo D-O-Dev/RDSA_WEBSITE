@@ -11,6 +11,7 @@
     </select>
     <button class="btn pri" type="submit">Filtrer</button>
     <a class="btn" href="{{ route('admin.attendances.index') }}">Réinitialiser</a>
+    @can('manage-team')<a class="btn" download href="{{ route('admin.exports', ['kind' => 'attendances'] + request()->only(['q', 'edition'])) }}"><i class="bi bi-download" aria-hidden="true"></i>Exporter CSV</a>@endcan
 </form>
 @if($errors->any())
 <div class="lock" role="alert">{{ $errors->first() }}</div>

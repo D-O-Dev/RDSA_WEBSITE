@@ -9,7 +9,7 @@
 <button class="btn" type="submit" form="site-content-form"><i class="bi bi-check2" aria-hidden="true"></i>Enregistrer</button>
 </div>
 <div class="content-program-note"><i class="bi bi-calendar3" aria-hidden="true"></i><p>Pour changer la date, le lieu, le thème ou la carte de la rencontre, rendez-vous dans <a href="{{ route('admin.index') }}">Éditions <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>.</p></div>
-<form id="site-content-form" method="POST" action="{{ route('admin.content.update') }}">
+<form id="site-content-form" method="POST" enctype="multipart/form-data" action="{{ route('admin.content.update') }}">
 @csrf @method('PUT')
 <div class="content-sections">
 @foreach($groups as $groupKey => $group)

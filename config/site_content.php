@@ -44,6 +44,32 @@ return [
     ]],
     'identity' => ['label' => 'Logo de la RDSA', 'icon' => 'award', 'description' => 'Le logo public et le fond de l’administration, par lien image ou fichier existant.', 'fields' => [
         'admin_background_path' => ['label' => 'Fond de l’administration', 'type' => 'image', 'default' => 'images/gallery/rdsa2/rdsa2-img-h42.jpeg'],
+        'ticket_logo_path' => ['label' => 'Logo intégré aux billets PDF (image locale ou téléversée)', 'type' => 'image', 'default' => 'images/logo/logo-ticket.jpg'],
         'logo_path' => ['label' => 'Logo du site', 'type' => 'image', 'default' => 'images/logo/logo.png'],
     ]],
+    'publication' => ['label' => 'Rubriques et navigation', 'icon' => 'layout-text-sidebar', 'description' => 'Choisis les rubriques visibles et leur ordre sur la page publique.', 'fields' => [
+        'show_rdsa' => ['label' => 'Afficher la présentation', 'type' => 'boolean', 'default' => '1'],
+        'show_editions' => ['label' => 'Afficher les éditions', 'type' => 'boolean', 'default' => '1'],
+        'show_medias' => ['label' => 'Afficher la galerie', 'type' => 'boolean', 'default' => '1'],
+        'show_participer' => ['label' => 'Afficher les réservations', 'type' => 'boolean', 'default' => '1'],
+        'show_contact' => ['label' => 'Afficher le contact', 'type' => 'boolean', 'default' => '1'],
+        'section_order' => ['label' => 'Ordre des rubriques', 'type' => 'section_order', 'default' => 'rdsa,editions,medias,participer,contact'],
+        'nav_rdsa' => ['label' => 'Nom du menu présentation', 'default' => 'La RDSA'],
+        'nav_editions' => ['label' => 'Nom du menu éditions', 'default' => 'Éditions'],
+        'nav_medias' => ['label' => 'Nom du menu galerie', 'default' => 'Médias'],
+        'nav_participer' => ['label' => 'Nom du menu réservation', 'default' => 'Participer'],
+        'nav_contact' => ['label' => 'Nom du menu contact', 'default' => 'Contact'],
+    ]],
+    'general_contact' => ['label' => 'Coordonnées permanentes', 'icon' => 'telephone', 'description' => 'Ces coordonnées restent disponibles lorsqu’aucune édition n’est ouverte.', 'fields' => [
+        'general_phone' => ['label' => 'Téléphone permanent', 'type' => 'phone', 'optional' => true, 'default' => ''],
+        'general_whatsapp' => ['label' => 'WhatsApp permanent', 'type' => 'phone', 'optional' => true, 'default' => ''],
+        'general_venue' => ['label' => 'Adresse permanente', 'optional' => true, 'default' => ''],
+        'general_map_url' => ['label' => 'Lien Google Maps permanent', 'type' => 'map', 'optional' => true, 'default' => ''],
+    ]],
+    'search' => ['label' => 'Présentation dans les recherches', 'icon' => 'search', 'description' => 'Le titre et la description publics utilisés pour présenter le site.', 'fields' => [
+        'seo_title' => ['label' => 'Titre public du site', 'default' => 'RDSA - Réunion des Assoiffés de Prière & d’Adoration'],
+        'seo_description' => ['label' => 'Description du site', 'type' => 'textarea', 'default' => "RDSA - Réunion des Assoiffés de Prière & d'Adoration"],
+        'site_author' => ['label' => 'Auteur / créateur du site', 'optional' => true, 'default' => 'Jada Firmament'],
+    ]],
+
 ];

@@ -1,3 +1,4 @@
+import './push.js';
 import './media.js';
 import './public-notifications.js';
 import './hero.js';
